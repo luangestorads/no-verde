@@ -2,9 +2,14 @@
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { fmtBRL, fmtNumber, fmtPercent, fmtRoas } from "@/lib/metrics";
-import { analyzeCampaign, SEVERITY_LABEL, ACTION_LABEL, severityColor } from "@/lib/optimizer";
+import { fmtBRL, fmtNumber, fmtPercent, fmtRoas, computeTicket } from "@/lib/metrics";
+import {
+  analyzeCampaign, SEVERITY_LABEL, ACTION_LABEL, severityColor, severityBg,
+  STATUS_LABEL, statusColor, statusBg,
+  type Veredito,
+} from "@/lib/optimizer";
 import type { CampaignRow } from "@/lib/campaign-types";
 import { cn } from "@/lib/utils";
 
@@ -17,13 +22,15 @@ export function CampaignDetailDrawer({
 }) {
   const open = campaign !== null;
   const recs = campaign ? analyzeCampaign(campaign) : [];
+  const ticket = campaign ? computeTicket(campaign) : 0;
+  const allVereditos = recs[0]?.vereditos || [];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto p-0">
         {campaign && (
-          <>
-            <SheetHeader>
+          <div className="flex flex-col h-full">
+            <SheetHeader className="px-5 pt-5 pb-3 border-b">
               <SheetTitle className="text-lg leading-tight">{campaign.name}</SheetTitle>
               <SheetDescription className="flex items-center gap-2 flex-wrap">
                 <DeliveryBadge delivery={campaign.delivery} />
@@ -31,50 +38,70 @@ export function CampaignDetailDrawer({
               </SheetDescription>
             </SheetHeader>
 
-            <div className="px-4 pb-6 space-y-5">
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
               {/* Destaque Grana No Bolso */}
               <div className={cn(
-                "rounded-xl p-4 border",
+                "rounded-2xl p-4 border",
                 (campaign.granaNoBolso || 0) >= 0
-                  ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900"
-                  : "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900",
+                  ? "bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/20 border-emerald-200 dark:border-emerald-900"
+                  : "bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/40 dark:to-red-900/20 border-red-200 dark:border-red-900",
               )}>
-                <div className="text-xs text-muted-foreground">Grana No Bolso</div>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <PiggyBank className="h-3.5 w-3.5" />
+                  Grana No Bolso
+                </div>
                 <div className={cn(
-                  "text-3xl font-bold tabular-nums",
+                  "text-3xl sm:text-4xl font-bold tabular-nums mt-1",
                   (campaign.granaNoBolso || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400",
                 )}>
                   {fmtBRL(campaign.granaNoBolso)}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">
+                <div className="text-xs text-muted-foreground mt-1.5">
                   Receita {fmtBRL(campaign.purchaseConversionValue)} − Investido {fmtBRL(campaign.spent)}
                 </div>
               </div>
 
-              {/* Métricas principais */}
-              <Section title="Desempenho financeiro">
-                <Metric label="ROAS (compras)" value={fmtRoas(campaign.roasPurchases)} tone={(campaign.roasPurchases || 0) >= 1 ? "positive" : "negative"} />
-                <Metric label="Custo por compra" value={campaign.costPerPurchase > 0 ? fmtBRL(campaign.costPerPurchase) : "—"} />
+              {/* Vereditos de cada métrica */}
+              {allVereditos.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">
+                    Como está cada parte
+                  </h3>
+                  <div className="space-y-2">
+                    {allVereditos.map((v, i) => (
+                      <VereditoCard key={i} v={v} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <Separator />
+
+              {/* Detalhes financeiros */}
+              <Section title="Dinheiro">
                 <Metric label="Orçamento" value={fmtBRL(campaign.budget)} />
-                <Metric label="Utilização" value={campaign.budget > 0 ? fmtPercent((campaign.spent / campaign.budget) * 100) : "—"} />
+                <Metric label="Utilizado" value={campaign.budget > 0 ? fmtPercent((campaign.spent / campaign.budget) * 100) : "—"} />
+                <Metric label="Investido" value={fmtBRL(campaign.spent)} />
+                <Metric label="Receita" value={fmtBRL(campaign.purchaseConversionValue)} />
+                <Metric label="Ticket médio" value={ticket > 0 ? fmtBRL(ticket) : "—"} sub="preço médio de cada venda" />
               </Section>
 
-              <Section title="Engajamento">
-                <Metric label="CTR (todos)" value={fmtPercent(campaign.ctr)} />
-                <Metric label="Views (página destino)" value={fmtNumber(campaign.landingPageViews)} />
-                <Metric label="Checkouts iniciados" value={fmtNumber(campaign.checkoutInitiated)} />
-                <Metric label="Compras" value={fmtNumber(campaign.purchases)} />
+              <Section title="Caminho até comprar">
+                <Metric label="Viram a página" value={fmtNumber(campaign.landingPageViews)} />
+                <Metric label="Custo por view" value={campaign.costPerLandingPageView > 0 ? fmtBRL(campaign.costPerLandingPageView) : "—"} sub={ticket > 0 && campaign.costPerLandingPageView > 0 ? `${((campaign.costPerLandingPageView / ticket) * 100).toFixed(0)}% do produto` : undefined} />
+                <Metric label="Chegaram no carrinho" value={fmtNumber(campaign.checkoutInitiated)} />
+                <Metric label="Custo por carrinho" value={campaign.costPerCheckoutInitiated > 0 ? fmtBRL(campaign.costPerCheckoutInitiated) : "—"} sub={ticket > 0 && campaign.costPerCheckoutInitiated > 0 ? `${((campaign.costPerCheckoutInitiated / ticket) * 100).toFixed(0)}% do produto` : undefined} />
+                <Metric label="Compraram" value={fmtNumber(campaign.purchases)} />
+                <Metric label="Custo por venda" value={campaign.costPerPurchase > 0 ? fmtBRL(campaign.costPerPurchase) : "—"} sub={ticket > 0 && campaign.costPerPurchase > 0 ? `${((campaign.costPerPurchase / ticket) * 100).toFixed(0)}% do produto` : undefined} />
               </Section>
 
-              <Section title="Funil de conversão">
-                <Metric label="Views → Checkout" value={rate(campaign.landingPageViews, campaign.checkoutInitiated)} />
-                <Metric label="Checkout → Compra" value={rate(campaign.checkoutInitiated, campaign.purchases)} />
-                <Metric label="Views → Compra" value={rate(campaign.landingPageViews, campaign.purchases)} />
-                <Metric label="Ticket médio" value={campaign.purchases > 0 ? fmtBRL(campaign.purchaseConversionValue / campaign.purchases) : "—"} />
+              <Section title="Qualidade do anúncio">
+                <Metric label="Cliques (CTR)" value={fmtPercent(campaign.ctr)} sub="de cada 100, quantos clicaram" />
+                <Metric label="Retorno (ROAS)" value={fmtRoas(campaign.roasPurchases)} sub="cada R$ 1 virou…" />
               </Section>
 
               {(campaign.purchasesSite > 0 || campaign.purchasesApp > 0 || campaign.purchasesOffline > 0 || campaign.purchasesMeta > 0) && (
-                <Section title="Compras por canal">
+                <Section title="Vendas por canal">
                   <Metric label="Site" value={fmtNumber(campaign.purchasesSite)} sub={fmtBRL(campaign.purchaseConversionValueSite)} />
                   <Metric label="App" value={fmtNumber(campaign.purchasesApp)} sub={fmtBRL(campaign.purchaseConversionValueApp)} />
                   <Metric label="Offline" value={fmtNumber(campaign.purchasesOffline)} sub={fmtBRL(campaign.purchaseConversionValueOffline)} />
@@ -84,14 +111,22 @@ export function CampaignDetailDrawer({
 
               <Separator />
 
-              {/* Recomendações desta campanha */}
+              {/* Recomendações */}
               <div>
-                <h3 className="text-sm font-semibold mb-2">Recomendações</h3>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2.5">
+                  O que fazer
+                </h3>
                 <div className="space-y-2">
                   {recs.map((r, i) => (
-                    <div key={i} className="rounded-lg border p-3 text-sm">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className="font-medium">{r.title}</span>
+                    <div key={i} className={cn(
+                      "rounded-xl border border-l-4 p-3 bg-card",
+                      r.severity === "critico" && "border-l-red-500",
+                      r.severity === "alerta" && "border-l-amber-500",
+                      r.severity === "oportunidade" && "border-l-emerald-500",
+                      r.severity === "bom" && "border-l-emerald-400",
+                    )}>
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="font-medium text-sm">{r.title}</span>
                         <Badge variant="outline" className={cn("text-[10px]", severityColor(r.severity))}>
                           {SEVERITY_LABEL[r.severity]}
                         </Badge>
@@ -99,17 +134,47 @@ export function CampaignDetailDrawer({
                       <p className="text-xs text-muted-foreground leading-relaxed">{r.detail}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <Badge variant="secondary" className="text-[10px]">{ACTION_LABEL[r.action]}</Badge>
-                        <span className="text-[10px] text-muted-foreground">{r.metric}: {r.value}</span>
+                        {r.impact > 0 && (
+                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                            +{fmtBRL(r.impact, { compact: true })}
+                          </span>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
       </SheetContent>
     </Sheet>
+  );
+}
+
+function PiggyBank() {
+  return <span className="inline-block h-3.5 w-3.5 rounded-full bg-current opacity-70" />;
+}
+
+function VereditoCard({ v }: { v: Veredito }) {
+  const pct = v.statusNum === 3 ? 100 : v.statusNum === 2 ? 75 : v.statusNum === 1 ? 40 : 15;
+  return (
+    <div className="rounded-xl border bg-card p-3">
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", statusBg(v.status))} />
+          <span className="text-sm font-medium truncate">{v.metrica}</span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className={cn("text-sm font-semibold tabular-nums", statusColor(v.status))}>{v.valor}</span>
+        </div>
+      </div>
+      <Progress value={pct} className={cn("h-1.5 mb-2", v.status === "ruim" && "[&>div]:bg-red-500", v.status === "atencao" && "[&>div]:bg-amber-500", (v.status === "bom" || v.status === "excelente") && "[&>div]:bg-emerald-500")} />
+      <p className="text-xs text-muted-foreground leading-relaxed">{v.oQueSignifica}</p>
+      <p className="text-xs text-foreground/80 leading-relaxed mt-1">
+        <span className="font-medium">O que fazer: </span>{v.oQueFazer}
+      </p>
+    </div>
   );
 }
 
@@ -122,15 +187,11 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Metric({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: "positive" | "negative" }) {
+function Metric({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-lg bg-muted/40 p-2.5">
       <div className="text-[10px] text-muted-foreground">{label}</div>
-      <div className={cn(
-        "text-sm font-semibold tabular-nums",
-        tone === "positive" && "text-emerald-600 dark:text-emerald-400",
-        tone === "negative" && "text-red-600 dark:text-red-400",
-      )}>{value}</div>
+      <div className="text-sm font-semibold tabular-nums">{value}</div>
       {sub && <div className="text-[10px] text-muted-foreground tabular-nums">{sub}</div>}
     </div>
   );
@@ -144,9 +205,4 @@ function DeliveryBadge({ delivery }: { delivery: string }) {
   else if (d.includes("paus")) { variant = "secondary"; label = "Pausada"; }
   else if (d.includes("rejeit") || d.includes("negad")) { variant = "destructive"; label = "Rejeitada"; }
   return <Badge variant={variant} className="text-[10px]">{label}</Badge>;
-}
-
-function rate(from: number, to: number): string {
-  if (!from || from === 0) return "—";
-  return `${((to / from) * 100).toFixed(1)}%`;
 }

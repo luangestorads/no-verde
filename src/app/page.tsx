@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { PiggyBank, Database, Trash2, RefreshCw, Sparkles, BarChart3, ListChecks } from "lucide-react";
+import { PiggyBank, Database, Trash2, RefreshCw, Sparkles, BarChart3, ListChecks, Info } from "lucide-react";
 import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { ChartsPanel } from "@/components/dashboard/charts-panel";
 import { CampaignTable } from "@/components/dashboard/campaign-table";
@@ -14,6 +14,7 @@ import { AiPanel } from "@/components/dashboard/ai-panel";
 import { ImportDialog } from "@/components/dashboard/import-dialog";
 import { CampaignDetailDrawer } from "@/components/dashboard/campaign-detail-drawer";
 import { EmptyState } from "@/components/dashboard/empty-state";
+import { CriteriaGuide } from "@/components/dashboard/criteria-guide";
 import type { CampaignRow } from "@/lib/campaign-types";
 import type { Summary } from "@/lib/metrics";
 import type { Recommendation, Severity } from "@/lib/optimizer";
@@ -29,6 +30,7 @@ export default function Home() {
   const [importOpen, setImportOpen] = useState(false);
   const [selected, setSelected] = useState<CampaignRow | null>(null);
   const [tab, setTab] = useState("overview");
+  const [showGuide, setShowGuide] = useState(false);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -47,7 +49,7 @@ export default function Home() {
       setRisk(insData.risk || 0);
     } catch (e) {
       console.error(e);
-      toast.error("Falha ao carregar dados");
+      toast.error("Não consegui carregar os dados");
     } finally {
       setLoading(false);
     }
@@ -58,12 +60,12 @@ export default function Home() {
   }, [loadAll]);
 
   async function handleSeed() {
-    const t = toast.loading("Carregando dados de exemplo…");
+    const t = toast.loading("Carregando campanhas de exemplo…");
     try {
       const res = await fetch("/api/campaigns/seed", { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Erro");
-      toast.success(`${data.created} campanhas de exemplo carregadas`, { id: t });
+      toast.success(`${data.created} campanhas carregadas`, { id: t });
       await loadAll();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao carregar exemplo", { id: t });
@@ -71,7 +73,7 @@ export default function Home() {
   }
 
   async function handleClear() {
-    const t = toast.loading("Limpando campanhas…");
+    const t = toast.loading("Limpando tudo…");
     try {
       const res = await fetch("/api/campaigns/clear", { method: "DELETE" });
       const data = await res.json();
@@ -103,14 +105,14 @@ export default function Home() {
   const hasData = campaigns.length > 0;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-muted/30">
       <Toaster richColors position="top-right" />
 
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur sticky top-0 z-30">
+      <header className="border-b bg-card/80 backdrop-blur-lg sticky top-0 z-30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0 shadow-sm">
+            <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-400 to-orange-500 flex items-center justify-center shrink-0 shadow-md shadow-orange-500/20">
               <PiggyBank className="h-5 w-5 text-white" />
             </div>
             <div className="min-w-0">
@@ -118,12 +120,22 @@ export default function Home() {
                 Grana No Bolso
               </h1>
               <p className="text-[11px] sm:text-xs text-muted-foreground leading-tight">
-                Otimizador de Campanhas Meta Ads
+                O otimizador das suas campanhas de Meta Ads
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowGuide((s) => !s)}
+              aria-label="Como funciona"
+              title="Como o sistema julga cada campanha"
+              className="h-9 w-9"
+            >
+              <Info className="h-4 w-4" />
+            </Button>
             <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={loading} aria-label="Atualizar" className="h-9 w-9">
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             </Button>
@@ -144,6 +156,13 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Guia de critérios (colapsável) */}
+      {showGuide && (
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 pt-4">
+          <CriteriaGuide />
+        </div>
+      )}
+
       {/* Main */}
       <main className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 py-5 sm:py-6 space-y-5">
         {!hasData ? (
@@ -151,13 +170,16 @@ export default function Home() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="h-24 rounded-xl bg-muted animate-pulse" />
+                  <div key={i} className="h-28 rounded-xl bg-card animate-pulse" />
                 ))}
               </div>
-              <div className="h-72 rounded-xl bg-muted animate-pulse" />
+              <div className="h-72 rounded-xl bg-card animate-pulse" />
             </div>
           ) : (
-            <EmptyState onSeed={handleSeed} onImport={() => setImportOpen(true)} />
+            <div className="space-y-4">
+              <CriteriaGuide />
+              <EmptyState onSeed={handleSeed} onImport={() => setImportOpen(true)} />
+            </div>
           )
         ) : (
           <>
@@ -171,7 +193,7 @@ export default function Home() {
                 </TabsTrigger>
                 <TabsTrigger value="optimization" className="gap-1.5 text-xs sm:text-sm">
                   <ListChecks className="h-3.5 w-3.5" />
-                  Otimização
+                  O que fazer
                 </TabsTrigger>
                 <TabsTrigger value="ai" className="gap-1.5 text-xs sm:text-sm">
                   <Sparkles className="h-3.5 w-3.5" />
@@ -184,7 +206,7 @@ export default function Home() {
                 <CampaignTable campaigns={campaigns} onSelect={setSelected} onDelete={handleDelete} />
               </TabsContent>
 
-              <TabsContent value="optimization" className="mt-4">
+              <TabsContent value="optimization" className="mt-4 space-y-4">
                 <OptimizationPanel
                   recommendations={recommendations}
                   counts={counts}
@@ -192,10 +214,12 @@ export default function Home() {
                   risk={risk}
                   onAskAi={() => setTab("ai")}
                 />
+                <CriteriaGuide />
               </TabsContent>
 
-              <TabsContent value="ai" className="mt-4">
+              <TabsContent value="ai" className="mt-4 space-y-4">
                 <AiPanel disabled={!hasData} />
+                <CriteriaGuide />
               </TabsContent>
             </Tabs>
           </>
@@ -203,14 +227,14 @@ export default function Home() {
       </main>
 
       {/* Footer (sticky bottom) */}
-      <footer className="mt-auto border-t bg-card/50">
+      <footer className="mt-auto border-t bg-card/80 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3 flex items-center justify-between gap-3 text-xs text-muted-foreground flex-wrap">
           <span className="flex items-center gap-1.5">
             <PiggyBank className="h-3.5 w-3.5 text-amber-500" />
-            Grana No Bolso · Otimizador de Meta Ads
+            Grana No Bolso · seu lucro limpo após os anúncios
           </span>
           <span className="hidden sm:inline">
-            Grana No Bolso = Receita de conversão − Valor investido em ads
+            Grana No Bolso = Receita − Investido
           </span>
         </div>
       </footer>

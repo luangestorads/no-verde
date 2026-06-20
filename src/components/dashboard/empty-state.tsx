@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PiggyBank, Upload, Database, Sparkles } from "lucide-react";
+import { PiggyBank, Upload, Database } from "lucide-react";
 
 export function EmptyState({
   onSeed,
@@ -13,29 +13,28 @@ export function EmptyState({
 }) {
   return (
     <Card className="border-dashed">
-      <CardContent className="py-12 px-6 text-center">
-        <div className="mx-auto h-14 w-14 rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center mb-4">
-          <PiggyBank className="h-7 w-7 text-amber-600 dark:text-amber-400" />
+      <CardContent className="py-14 px-6 text-center">
+        <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-5 shadow-lg shadow-orange-500/20">
+          <PiggyBank className="h-8 w-8 text-white" />
         </div>
-        <h3 className="text-lg font-semibold">Nenhuma campanha ainda</h3>
-        <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
-          Importe os dados direto do Gerenciador de Anúncios da Meta ou carregue dados de exemplo
-          para ver o otimizador em ação.
+        <h3 className="text-xl font-bold">Bem-vindo ao Grana No Bolso</h3>
+        <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto leading-relaxed">
+          Aqui você descobre exatamente quais campanhas estão te dando lucro
+          e o que fazer com as que estão te fazendo perder dinheiro.
         </p>
-        <div className="flex flex-col sm:flex-row gap-2 justify-center mt-5">
-          <Button onClick={onImport} className="gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 justify-center mt-6">
+          <Button onClick={onImport} size="lg" className="gap-2">
             <Upload className="h-4 w-4" />
-            Importar Meta Ads
+            Importar meus dados do Meta Ads
           </Button>
-          <Button variant="outline" onClick={onSeed} className="gap-2">
+          <Button variant="outline" onClick={onSeed} size="lg" className="gap-2">
             <Database className="h-4 w-4" />
-            Carregar exemplo
+            Ver com dados de exemplo
           </Button>
         </div>
-        <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-4">
-          <Sparkles className="h-3 w-3" />
-          O sistema detecta as colunas do Meta Ads automaticamente
-        </div>
+        <p className="text-xs text-muted-foreground mt-5">
+          Cola os dados do Gerenciador de Anúncios que a gente reconhece as colunas sozinho.
+        </p>
       </CardContent>
     </Card>
   );

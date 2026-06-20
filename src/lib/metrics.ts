@@ -7,13 +7,21 @@ export function computeGranaNoBolso(row: Pick<CampaignRow, "purchaseConversionVa
   return (row.purchaseConversionValue || 0) - (row.spent || 0);
 }
 
-// ROAS = Valor de conversão / Valor usado (recomputado para evitar inconsistência)
+// ROAS = Valor de conversão / Valor usado
 export function computeRoas(row: Pick<CampaignRow, "purchaseConversionValue" | "spent">): number {
   if (!row.spent || row.spent === 0) return 0;
   return (row.purchaseConversionValue || 0) / row.spent;
 }
 
-// Margem percentual da Grana No Bolso sobre a receita
+// Ticket médio = Receita / Compras (preço médio de cada venda)
+// Usado como base para os critérios do grande player (% do ticket).
+export function computeTicket(row: Pick<CampaignRow, "purchaseConversionValue" | "purchases">): number {
+  const purchases = row.purchases || 0;
+  if (purchases === 0) return 0;
+  return (row.purchaseConversionValue || 0) / purchases;
+}
+
+// Margem da Grana No Bolso sobre a receita
 export function computeMargin(row: Pick<CampaignRow, "purchaseConversionValue" | "spent">): number {
   const rev = row.purchaseConversionValue || 0;
   if (rev === 0) return 0;
@@ -32,6 +40,9 @@ export type Summary = {
   avgCtr: number;
   avgRoas: number;
   avgCostPerPurchase: number;
+  avgCostPerCheckout: number;
+  avgCostPerView: number;
+  avgTicket: number;
   bestCampaign?: { name: string; granaNoBolso: number };
   worstCampaign?: { name: string; granaNoBolso: number };
 };
@@ -41,7 +52,7 @@ export function summarize(rows: CampaignRow[]): Summary {
     return {
       count: 0, activeCount: 0, totalSpent: 0, totalRevenue: 0, totalGranaNoBolso: 0,
       totalPurchases: 0, totalCheckoutInitiated: 0, totalLandingPageViews: 0,
-      avgCtr: 0, avgRoas: 0, avgCostPerPurchase: 0,
+      avgCtr: 0, avgRoas: 0, avgCostPerPurchase: 0, avgCostPerCheckout: 0, avgCostPerView: 0, avgTicket: 0,
     };
   }
   const totalSpent = sum(rows, "spent");
@@ -53,6 +64,9 @@ export function summarize(rows: CampaignRow[]): Summary {
   const avgCtr = rows.reduce((a, r) => a + (r.ctr || 0), 0) / rows.length;
   const avgRoas = totalSpent > 0 ? totalRevenue / totalSpent : 0;
   const avgCpa = totalPurchases > 0 ? totalSpent / totalPurchases : 0;
+  const avgCpo = totalCheckout > 0 ? totalSpent / totalCheckout : 0;
+  const avgCpv = totalViews > 0 ? totalSpent / totalViews : 0;
+  const avgTicket = totalPurchases > 0 ? totalRevenue / totalPurchases : 0;
   const activeCount = rows.filter((r) => r.delivery?.toLowerCase().includes("ativ")).length;
 
   const sorted = [...rows].sort((a, b) => (b.granaNoBolso || 0) - (a.granaNoBolso || 0));
@@ -71,6 +85,9 @@ export function summarize(rows: CampaignRow[]): Summary {
     avgCtr,
     avgRoas,
     avgCostPerPurchase: avgCpa,
+    avgCostPerCheckout: avgCpo,
+    avgCostPerView: avgCpv,
+    avgTicket,
     bestCampaign: best ? { name: best.name, granaNoBolso: best.granaNoBolso } : undefined,
     worstCampaign: worst ? { name: worst.name, granaNoBolso: worst.granaNoBolso } : undefined,
   };

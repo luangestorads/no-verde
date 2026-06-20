@@ -7,13 +7,40 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { fmtBRL, fmtNumber, fmtPercent, fmtRoas } from "@/lib/metrics";
+import { fmtBRL, fmtNumber, fmtPercent, fmtRoas, computeTicket } from "@/lib/metrics";
+import { CRITERIOS, type Status } from "@/lib/optimizer";
 import type { CampaignRow } from "@/lib/campaign-types";
 import { ArrowDownUp, Search, ChevronRight, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type SortKey = "granaNoBolso" | "roasPurchases" | "spent" | "purchaseConversionValue" | "ctr" | "costPerPurchase" | "purchases";
 type Filter = "all" | "ativa" | "pausada" | "lucro" | "prejuizo";
+
+// Status simplificado por campanha para o "semáforo" na tabela
+function campaignStatus(c: CampaignRow): Status {
+  const roas = c.roasPurchases || 0;
+  const ticket = computeTicket(c);
+  const cpaPct = ticket > 0 && c.costPerPurchase > 0 ? (c.costPerPurchase / ticket) * 100 : 0;
+  const ctr = c.ctr || 0;
+  // contagem simples
+  let bad = 0, mid = 0, good = 0;
+  if (roas >= CRITERIOS.roas.magnifico) good++; else if (roas >= CRITERIOS.roas.ideal) good++; else if (roas >= CRITERIOS.roas.breakEven) mid++; else bad++;
+  if (ctr >= CRITERIOS.ctr.excelente) good++; else if (ctr >= CRITERIOS.ctr.bom) mid++; else bad++;
+  if (cpaPct > 0) { if (cpaPct <= 30) good++; else if (cpaPct <= CRITERIOS.custoCompra.pctTicket) mid++; else bad++; }
+  if (bad > 0) return "ruim";
+  if (mid > good) return "atencao";
+  if (good > 0) return "excelente";
+  return "bom";
+}
+
+function statusDot(s: Status): string {
+  switch (s) {
+    case "excelente": return "bg-emerald-500";
+    case "bom": return "bg-emerald-500";
+    case "atencao": return "bg-amber-500";
+    case "ruim": return "bg-red-500";
+  }
+}
 
 export function CampaignTable({
   campaigns,
@@ -56,15 +83,18 @@ export function CampaignTable({
     <Card>
       <CardHeader className="pb-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <CardTitle className="text-base">Campanhas ({rows.length})</CardTitle>
+          <div>
+            <CardTitle className="text-base">Suas campanhas</CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">Clique numa campanha para ver o que fazer com ela</p>
+          </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar campanha…"
+                placeholder="Buscar…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="pl-8 h-9 w-full sm:w-56"
+                className="pl-8 h-9 w-full sm:w-48"
                 aria-label="Buscar campanha"
               />
             </div>
@@ -76,7 +106,7 @@ export function CampaignTable({
                 <SelectItem value="all">Todas</SelectItem>
                 <SelectItem value="ativa">Ativas</SelectItem>
                 <SelectItem value="pausada">Pausadas</SelectItem>
-                <SelectItem value="lucro">Em lucro</SelectItem>
+                <SelectItem value="lucro">Dando lucro</SelectItem>
                 <SelectItem value="prejuizo">No prejuízo</SelectItem>
               </SelectContent>
             </Select>
@@ -84,11 +114,11 @@ export function CampaignTable({
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="max-h-[28rem] overflow-auto rounded-b-xl">
+        <div className="max-h-[28rem] overflow-auto rounded-b-xl custom-scroll">
           <Table>
             <TableHeader className="sticky top-0 bg-card z-10">
               <TableRow>
-                <TableHead className="min-w-[180px]">Campanha</TableHead>
+                <TableHead className="min-w-[200px]">Campanha</TableHead>
                 <TableHead className="text-right cursor-pointer select-none hover:bg-muted/50" onClick={() => toggleSort("spent")}>
                   <span className="inline-flex items-center gap-1">Investido <ArrowDownUp className="h-3 w-3" /></span>
                 </TableHead>
@@ -99,16 +129,13 @@ export function CampaignTable({
                   <span className="inline-flex items-center gap-1">Grana No Bolso <ArrowDownUp className="h-3 w-3" /></span>
                 </TableHead>
                 <TableHead className="text-right cursor-pointer select-none hover:bg-muted/50" onClick={() => toggleSort("roasPurchases")}>
-                  <span className="inline-flex items-center gap-1">ROAS <ArrowDownUp className="h-3 w-3" /></span>
+                  <span className="inline-flex items-center gap-1">Retorno <ArrowDownUp className="h-3 w-3" /></span>
                 </TableHead>
                 <TableHead className="text-right cursor-pointer select-none hover:bg-muted/50" onClick={() => toggleSort("ctr")}>
-                  <span className="inline-flex items-center gap-1">CTR <ArrowDownUp className="h-3 w-3" /></span>
-                </TableHead>
-                <TableHead className="text-right cursor-pointer select-none hover:bg-muted/50" onClick={() => toggleSort("purchases")}>
-                  <span className="inline-flex items-center gap-1">Compras <ArrowDownUp className="h-3 w-3" /></span>
+                  <span className="inline-flex items-center gap-1">Cliques <ArrowDownUp className="h-3 w-3" /></span>
                 </TableHead>
                 <TableHead className="text-right cursor-pointer select-none hover:bg-muted/50" onClick={() => toggleSort("costPerPurchase")}>
-                  <span className="inline-flex items-center gap-1">CPA <ArrowDownUp className="h-3 w-3" /></span>
+                  <span className="inline-flex items-center gap-1">Custo/venda <ArrowDownUp className="h-3 w-3" /></span>
                 </TableHead>
                 <TableHead className="w-10" />
               </TableRow>
@@ -117,10 +144,12 @@ export function CampaignTable({
               {rows.map((c) => {
                 const granaPositive = (c.granaNoBolso || 0) >= 0;
                 const roasOk = (c.roasPurchases || 0) >= 1;
+                const status = campaignStatus(c);
                 return (
                   <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => onSelect(c)}>
-                    <TableCell className="font-medium max-w-[220px] truncate">
+                    <TableCell className="font-medium max-w-[220px]">
                       <div className="flex items-center gap-2">
+                        <span className={cn("h-2 w-2 rounded-full shrink-0", statusDot(status))} title={`Status: ${status}`} />
                         <span className="truncate" title={c.name}>{c.name}</span>
                       </div>
                       <DeliveryBadge delivery={c.delivery} />
@@ -134,7 +163,6 @@ export function CampaignTable({
                       {fmtRoas(c.roasPurchases)}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{fmtPercent(c.ctr)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{fmtNumber(c.purchases)}</TableCell>
                     <TableCell className="text-right tabular-nums">{c.costPerPurchase > 0 ? fmtBRL(c.costPerPurchase) : "—"}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
@@ -155,8 +183,8 @@ export function CampaignTable({
               })}
               {rows.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
-                    Nenhuma campanha corresponde aos filtros.
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                    Nenhuma campanha encontrada com esse filtro.
                   </TableCell>
                 </TableRow>
               )}
