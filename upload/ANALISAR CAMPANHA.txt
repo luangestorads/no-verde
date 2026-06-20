@@ -1,0 +1,48 @@
+CTR TODOS(importância)
++2% é essencial
+
+VISUALIZAÇÃO DA PÁGINA DE DESTINO(QUANTAS PESSOAS ESTÃO VENDO O SITE)
+Quanto maior volume melhor
+Se tem pouco volume o criativo não está bom
+
+CUSTO POR VISUALIZAÇÃO DA PÁGINA DE DESTINO
+Depende do ticket e do público
+Que esteja no máximo de caro de 1,5 a 2,5 reais
+Se estiver abaixo de 1,5 reais(1,20 ou 1,30) é muito bom pq ganha volume
+Pagar no máximo de 10% do preço do produto mais barato
+
+FINALIZAÇÃO DE COMPRA
+Quanto maior o volume de pessoas melhor
+
+----------------
+OBS: SE A PÁGINA TÁ MANDANDO PESSOAS PARA CHECKOUT, MUITAS PESSOAS = A COPY E OFERTA ESTÁ OK
+----------------------------------------
+
+CUSTO POR FINALIZAÇÃO DE COMPRA
+Sempre deixar abaixo de 10% do ticket do produto
+
+COMPRAS
+Quando maior volume de vendas melhor
+
+CUSTO POR COMPRA
+Não é essencial passar de 60% do preço do produto
+É essencial pagar no máximo abaixo de 60% abaixo do valor do ticket
+
+ROAS(RETORNO SOBRE INVESTIMENTO EM PUBLICIDADE)
+SE ESTIVER ACIMA DE 2.0 É MAGNIFICO
+É IDEAL ESTAR ACIMA DE 1.5
+
+--------------------------
+OBS PARA OBSERVAR
+
+CTR TODOS ACIMA DE 2% AS PESSOAS ESTÃO INDO PARA BOT
+SE TEM POUCA GENTE INDO PARA PÁGINA E ESTOU PAGANDO CUSTO POR VISUALIZAÇÃO DÁGINA DE DESTINO ALTO SIGNIFICA QUE O CRIATIVO ESTÁ RUIM(ELE NÃO MANDA AS PESSOAS PARA PÁGINA)
+SE ESTOU PAGANDO +20% PARA AS PESSOAS IREM PARA PÁGINA O CRIATIVO TÁ RUIM
+
+Se as pessoas estão indo para minha página e o custo por finalização de compra está +10% do ticket, a copy está ruim e a oferta também
+
+Se tem muita finalização de compra e finalização de compra barata está perfeito
+
+Se o custo por compra estivar até 60% do ticket do produto está ok
+
+ROAS ideal é 2,00%

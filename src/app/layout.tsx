@@ -14,24 +14,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Z.ai Code Scaffold - AI-Powered Development",
-  description: "Modern Next.js scaffold optimized for AI-powered development with Z.ai. Built with TypeScript, Tailwind CSS, and shadcn/ui.",
-  keywords: ["Z.ai", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "AI development", "React"],
-  authors: [{ name: "Z.ai Team" }],
-  icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
-  },
+  title: "Grana No Bolso · Otimizador de Campanhas Meta Ads",
+  description: "SaaS para otimizar campanhas do Facebook/Instagram Ads com base nas métricas do Gerenciador de Anúncios. Calcule o lucro líquido (Grana No Bolso) e receba recomendações acionáveis.",
+  keywords: ["Meta Ads", "Facebook Ads", "Instagram Ads", "otimização de campanhas", "ROAS", "tráfego pago"],
+  authors: [{ name: "Grana No Bolso" }],
   openGraph: {
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
-    url: "https://chat.z.ai",
-    siteName: "Z.ai",
+    title: "Grana No Bolso · Otimizador de Meta Ads",
+    description: "Otimize campanhas de Meta Ads com base nas métricas reais e maximize seu lucro líquido.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
+    title: "Grana No Bolso",
+    description: "Otimizador de Campanhas Meta Ads",
   },
 };
 

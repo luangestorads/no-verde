@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Grana No Bolso — Otimizador de Campanhas Meta Ads
+// Prisma schema (SQLite)
 
 generator client {
   provider = "prisma-client-js"
@@ -13,20 +10,59 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Campaign {
   id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // Identificação
+  name     String // Campanha
+  delivery String @default("Ativa") // Veiculação (Ativa, Pausada, Em análise, Rejeitada)
+  actions  String @default("") // Ações (objetivo)
+
+  // Orçamento
+  budget Float @default(0) // Orçamento
+  spent  Float @default(0) // Valor usado
+
+  // Engajamento
+  ctr Float @default(0) // CTR (todos) — percentual
+
+  // Finalizações de compra iniciadas
+  checkoutInitiated         Float @default(0) // Finalizações de compra iniciadas
+  checkoutInitiatedApp      Float @default(0) // no app para celular
+  checkoutInitiatedSite     Float @default(0) // no site
+  checkoutInitiatedOffline  Float @default(0) // offline
+  checkoutInitiatedMeta     Float @default(0) // na Meta
+
+  // Visualizações da página de destino
+  landingPageViews    Float @default(0) // Visualizações da página de destino
+  landingPageViewsApp Float @default(0) // do app
+  landingPageViewsSite Float @default(0) // do site
+
+  // Compras
+  purchases        Float @default(0) // Compras
+  purchasesApp     Float @default(0) // no app
+  purchasesSite    Float @default(0) // no site
+  purchasesOffline Float @default(0) // offline
+  purchasesMeta    Float @default(0) // na Meta
+
+  // Custos
+  costPerLandingPageView  Float @default(0) // Custo por visualização da página de destino
+  costPerCheckoutInitiated Float @default(0) // Custo por finalização de compra iniciada
+  costPerPurchase         Float @default(0) // Custo por compra
+
+  // Valor de conversão da compra
+  purchaseConversionValue     Float @default(0) // Valor de conversão da compra
+  purchaseConversionValueApp  Float @default(0) // no app
+  purchaseConversionValueSite Float @default(0) // no site
+  purchaseConversionValueOffline Float @default(0) // offline
+  purchaseConversionValueMeta Float @default(0) // na Meta
+
+  // ROAS
+  roasPurchases     Float @default(0) // ROAS das compras
+  roasPurchasesSite Float @default(0) // ROAS das compras no site
+  roasPurchasesApp  Float @default(0) // ROAS das compras no app
+
+  // Métrica central do SaaS
+  granaNoBolso Float @default(0) // Valor de conversão da compra - Valor usado (lucro líquido pós-ads)
 }
