@@ -14,11 +14,22 @@ export function computeRoas(row: Pick<CampaignRow, "purchaseConversionValue" | "
 }
 
 // Ticket médio = Receita / Compras (preço médio de cada venda)
-// Usado como base para os critérios do grande player (% do ticket).
-export function computeTicket(row: Pick<CampaignRow, "purchaseConversionValue" | "purchases">): number {
+// Se a campanha tiver um produto vinculado, usa o preço cadastrado (mais preciso
+// para os critérios do grande player, que se baseiam no "preço do produto").
+export function computeTicket(row: Pick<CampaignRow, "purchaseConversionValue" | "purchases" | "product">): number {
+  // Produto vinculado: usa o ticket principal cadastrado
+  if (row.product && row.product.price > 0) {
+    return row.product.price;
+  }
   const purchases = row.purchases || 0;
   if (purchases === 0) return 0;
   return (row.purchaseConversionValue || 0) / purchases;
+}
+
+// Ticket máximo potencial = preço + order bump + upsell (se a pessoa levar tudo)
+export function computeMaxTicket(row: Pick<CampaignRow, "product">): number {
+  if (!row.product) return 0;
+  return (row.product.price || 0) + (row.product.orderBumpPrice || 0) + (row.product.upsellPrice || 0);
 }
 
 // Margem da Grana No Bolso sobre a receita

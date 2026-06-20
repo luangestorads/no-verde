@@ -14,10 +14,10 @@ export function EmptyState({
   return (
     <Card className="border-dashed">
       <CardContent className="py-14 px-6 text-center">
-        <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-5 shadow-lg shadow-orange-500/20">
+        <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-500 flex items-center justify-center mb-5 shadow-lg shadow-emerald-500/20">
           <PiggyBank className="h-8 w-8 text-white" />
         </div>
-        <h3 className="text-xl font-bold">Bem-vindo ao Grana No Bolso</h3>
+        <h3 className="text-xl font-bold">Bem-vindo ao No Verde</h3>
         <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto leading-relaxed">
           Aqui você descobre exatamente quais campanhas estão te dando lucro
           e o que fazer com as que estão te fazendo perder dinheiro.

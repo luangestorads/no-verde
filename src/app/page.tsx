@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { PiggyBank, Database, Trash2, RefreshCw, Sparkles, BarChart3, ListChecks, Info } from "lucide-react";
+import { Database, Trash2, RefreshCw, Sparkles, BarChart3, ListChecks, Info, Package } from "lucide-react";
 import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { ChartsPanel } from "@/components/dashboard/charts-panel";
 import { CampaignTable } from "@/components/dashboard/campaign-table";
@@ -15,6 +15,7 @@ import { ImportDialog } from "@/components/dashboard/import-dialog";
 import { CampaignDetailDrawer } from "@/components/dashboard/campaign-detail-drawer";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { CriteriaGuide } from "@/components/dashboard/criteria-guide";
+import { ProductsPanel } from "@/components/dashboard/products-panel";
 import type { CampaignRow } from "@/lib/campaign-types";
 import type { Summary } from "@/lib/metrics";
 import type { Recommendation, Severity } from "@/lib/optimizer";
@@ -31,6 +32,7 @@ export default function Home() {
   const [selected, setSelected] = useState<CampaignRow | null>(null);
   const [tab, setTab] = useState("overview");
   const [showGuide, setShowGuide] = useState(false);
+  const [productsTick, setProductsTick] = useState(0); // incrementa p/ forçar reload de campanhas após mudar produtos
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -58,6 +60,11 @@ export default function Home() {
   useEffect(() => {
     loadAll();
   }, [loadAll]);
+
+  // Quando um produto é criado/editado, recarrega campanhas (p/ atualizar vínculos/tickets)
+  useEffect(() => {
+    if (productsTick > 0) loadAll();
+  }, [productsTick, loadAll]);
 
   async function handleSeed() {
     const t = toast.loading("Carregando campanhas de exemplo…");
@@ -112,15 +119,15 @@ export default function Home() {
       <header className="border-b bg-card/80 backdrop-blur-lg sticky top-0 z-30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-400 to-orange-500 flex items-center justify-center shrink-0 shadow-md shadow-orange-500/20">
-              <PiggyBank className="h-5 w-5 text-white" />
+            <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-500 flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20">
+              <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div className="min-w-0">
               <h1 className="text-base sm:text-lg font-bold leading-tight tracking-tight truncate">
-                Grana No Bolso
+                No Verde
               </h1>
               <p className="text-[11px] sm:text-xs text-muted-foreground leading-tight">
-                O otimizador das suas campanhas de Meta Ads
+                Suas campanhas no lucro · sua grana no bolso
               </p>
             </div>
           </div>
@@ -186,18 +193,26 @@ export default function Home() {
             <KpiCards summary={summary} />
 
             <Tabs value={tab} onValueChange={setTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 max-w-md">
+              <TabsList className="grid w-full grid-cols-4 max-w-lg">
                 <TabsTrigger value="overview" className="gap-1.5 text-xs sm:text-sm">
                   <BarChart3 className="h-3.5 w-3.5" />
-                  Visão Geral
+                  <span className="hidden sm:inline">Visão Geral</span>
+                  <span className="sm:hidden">Visão</span>
                 </TabsTrigger>
                 <TabsTrigger value="optimization" className="gap-1.5 text-xs sm:text-sm">
                   <ListChecks className="h-3.5 w-3.5" />
-                  O que fazer
+                  <span className="hidden sm:inline">O que fazer</span>
+                  <span className="sm:hidden">Ação</span>
+                </TabsTrigger>
+                <TabsTrigger value="products" className="gap-1.5 text-xs sm:text-sm">
+                  <Package className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Produtos</span>
+                  <span className="sm:hidden">Prod.</span>
                 </TabsTrigger>
                 <TabsTrigger value="ai" className="gap-1.5 text-xs sm:text-sm">
                   <Sparkles className="h-3.5 w-3.5" />
-                  IA
+                  <span className="hidden sm:inline">IA</span>
+                  <span className="sm:hidden">IA</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -217,6 +232,10 @@ export default function Home() {
                 <CriteriaGuide />
               </TabsContent>
 
+              <TabsContent value="products" className="mt-4">
+                <ProductsPanel onProductsChange={() => setProductsTick((t) => t + 1)} />
+              </TabsContent>
+
               <TabsContent value="ai" className="mt-4 space-y-4">
                 <AiPanel disabled={!hasData} />
                 <CriteriaGuide />
@@ -230,8 +249,8 @@ export default function Home() {
       <footer className="mt-auto border-t bg-card/80 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3 flex items-center justify-between gap-3 text-xs text-muted-foreground flex-wrap">
           <span className="flex items-center gap-1.5">
-            <PiggyBank className="h-3.5 w-3.5 text-amber-500" />
-            Grana No Bolso · seu lucro limpo após os anúncios
+            <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
+            No Verde · suas campanhas no lucro
           </span>
           <span className="hidden sm:inline">
             Grana No Bolso = Receita − Investido
@@ -239,7 +258,11 @@ export default function Home() {
         </div>
       </footer>
 
-      <CampaignDetailDrawer campaign={selected} onOpenChange={(v) => !v && setSelected(null)} />
+      <CampaignDetailDrawer
+        campaign={selected}
+        onOpenChange={(v) => !v && setSelected(null)}
+        onCampaignUpdated={loadAll}
+      />
     </div>
   );
 }

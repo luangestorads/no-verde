@@ -21,8 +21,8 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    const existing = await db.campaign.findMany({ select: { id: true, name: true } });
-    const existingByName = new Map(existing.map((c) => [c.name.trim().toLowerCase(), c.id]));
+    const existing = await db.campaign.findMany({ include: { product: true } });
+    const existingByName = new Map(existing.map((c) => [c.name.trim().toLowerCase(), c]));
 
     let created = 0;
     let updated = 0;
@@ -63,13 +63,13 @@ export async function POST(req: Request) {
         granaNoBolso: row.granaNoBolso,
       };
 
-      const existingId = existingByName.get(row.name.trim().toLowerCase());
-      if (existingId) {
-        const c = await db.campaign.update({ where: { id: existingId }, data });
+      const existingEntry = existingByName.get(row.name.trim().toLowerCase());
+      if (existingEntry) {
+        const c = await db.campaign.update({ where: { id: existingEntry.id }, data, include: { product: true } });
         resultRows.push(toRow(c));
         updated++;
       } else {
-        const c = await db.campaign.create({ data });
+        const c = await db.campaign.create({ data, include: { product: true } });
         resultRows.push(toRow(c));
         created++;
       }

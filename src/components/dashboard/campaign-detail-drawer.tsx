@@ -1,29 +1,74 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { fmtBRL, fmtNumber, fmtPercent, fmtRoas, computeTicket } from "@/lib/metrics";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { fmtBRL, fmtNumber, fmtPercent, fmtRoas, computeTicket, computeMaxTicket } from "@/lib/metrics";
 import {
   analyzeCampaign, SEVERITY_LABEL, ACTION_LABEL, severityColor, severityBg,
   STATUS_LABEL, statusColor, statusBg,
   type Veredito,
 } from "@/lib/optimizer";
-import type { CampaignRow } from "@/lib/campaign-types";
+import type { CampaignRow, ProductRow } from "@/lib/campaign-types";
+import { toast } from "sonner";
+import { Package, Link2, Tag, TrendingUp, ArrowUpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function CampaignDetailDrawer({
   campaign,
   onOpenChange,
+  onCampaignUpdated,
 }: {
   campaign: CampaignRow | null;
   onOpenChange: (v: boolean) => void;
+  onCampaignUpdated?: () => void;
 }) {
   const open = campaign !== null;
+  const [products, setProducts] = useState<ProductRow[]>([]);
+  const [linking, setLinking] = useState(false);
+
   const recs = campaign ? analyzeCampaign(campaign) : [];
   const ticket = campaign ? computeTicket(campaign) : 0;
+  const maxTicket = campaign ? computeMaxTicket(campaign) : 0;
   const allVereditos = recs[0]?.vereditos || [];
+  const linkedProduct = campaign?.product || null;
+
+  const loadProducts = useCallback(async () => {
+    try {
+      const res = await fetch("/api/products");
+      const data = await res.json();
+      setProducts(data.products || []);
+    } catch {
+      // silencioso
+    }
+  }, []);
+
+  useEffect(() => {
+    if (open) loadProducts();
+  }, [open, loadProducts]);
+
+  async function linkProduct(productId: string | null) {
+    if (!campaign?.id) return;
+    setLinking(true);
+    const t = toast.loading("Vinculando produto…");
+    try {
+      const res = await fetch(`/api/campaigns/${campaign.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId: productId === "none" ? null : productId }),
+      });
+      if (!res.ok) throw new Error("Erro");
+      toast.success(linkedProduct ? "Produto trocado" : (productId ? "Produto vinculado" : "Produto desvinculado"), { id: t });
+      onCampaignUpdated?.();
+    } catch {
+      toast.error("Falha ao vincular produto", { id: t });
+    } finally {
+      setLinking(false);
+    }
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -47,7 +92,7 @@ export function CampaignDetailDrawer({
                   : "bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/40 dark:to-red-900/20 border-red-200 dark:border-red-900",
               )}>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <PiggyBank className="h-3.5 w-3.5" />
+                  <PiggyBankIcon />
                   Grana No Bolso
                 </div>
                 <div className={cn(
@@ -59,6 +104,67 @@ export function CampaignDetailDrawer({
                 <div className="text-xs text-muted-foreground mt-1.5">
                   Receita {fmtBRL(campaign.purchaseConversionValue)} − Investido {fmtBRL(campaign.spent)}
                 </div>
+              </div>
+
+              {/* Vínculo de produto */}
+              <div className="rounded-xl border p-3.5 bg-muted/20">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground mb-2">
+                  <Link2 className="h-3.5 w-3.5" />
+                  Produto vinculado
+                </div>
+                {products.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    Cadastre um produto na aba <span className="font-medium">Produtos</span> para vincular aqui e deixar a análise mais precisa.
+                  </p>
+                ) : (
+                  <Select
+                    value={linkedProduct?.id || "none"}
+                    onValueChange={(v) => linkProduct(v)}
+                    disabled={linking}
+                  >
+                    <SelectTrigger className="h-9 text-sm" aria-label="Vincular produto">
+                      <SelectValue placeholder="Nenhum produto vinculado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">— Nenhum —</SelectItem>
+                      {products.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name} · {fmtBRL(p.price)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {linkedProduct && (
+                  <div className="mt-2.5 space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <Tag className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-muted-foreground">Ticket usado na análise:</span>
+                      <span className="font-semibold tabular-nums">{fmtBRL(linkedProduct.price)}</span>
+                      {maxTicket > linkedProduct.price && (
+                        <Badge variant="secondary" className="text-[10px] ml-auto">
+                          máx {fmtBRL(maxTicket)}
+                        </Badge>
+                      )}
+                    </div>
+                    {(linkedProduct.orderBumpPrice > 0 || linkedProduct.upsellPrice > 0) && (
+                      <div className="flex items-center gap-2 flex-wrap text-[11px] text-muted-foreground pt-1">
+                        {linkedProduct.orderBumpPrice > 0 && (
+                          <span className="flex items-center gap-1">
+                            <ArrowUpCircle className="h-3 w-3 text-emerald-500" />
+                            Bump {fmtBRL(linkedProduct.orderBumpPrice)}
+                          </span>
+                        )}
+                        {linkedProduct.upsellPrice > 0 && (
+                          <span className="flex items-center gap-1">
+                            <TrendingUp className="h-3 w-3 text-emerald-500" />
+                            Upsell {fmtBRL(linkedProduct.upsellPrice)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Vereditos de cada métrica */}
@@ -83,7 +189,7 @@ export function CampaignDetailDrawer({
                 <Metric label="Utilizado" value={campaign.budget > 0 ? fmtPercent((campaign.spent / campaign.budget) * 100) : "—"} />
                 <Metric label="Investido" value={fmtBRL(campaign.spent)} />
                 <Metric label="Receita" value={fmtBRL(campaign.purchaseConversionValue)} />
-                <Metric label="Ticket médio" value={ticket > 0 ? fmtBRL(ticket) : "—"} sub="preço médio de cada venda" />
+                <Metric label="Ticket médio" value={ticket > 0 ? fmtBRL(ticket) : "—"} sub={linkedProduct ? "do produto" : "calculado pelas vendas"} />
               </Section>
 
               <Section title="Caminho até comprar">
@@ -152,8 +258,8 @@ export function CampaignDetailDrawer({
   );
 }
 
-function PiggyBank() {
-  return <span className="inline-block h-3.5 w-3.5 rounded-full bg-current opacity-70" />;
+function PiggyBankIcon() {
+  return <Package className="h-3.5 w-3.5" />;
 }
 
 function VereditoCard({ v }: { v: Veredito }) {

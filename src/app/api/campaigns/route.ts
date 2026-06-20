@@ -7,7 +7,10 @@ import type { CampaignRow } from "@/lib/campaign-types";
 // GET /api/campaigns — lista todas as campanhas
 export async function GET() {
   try {
-    const campaigns = await db.campaign.findMany({ orderBy: { granaNoBolso: "desc" } });
+    const campaigns = await db.campaign.findMany({
+      orderBy: { granaNoBolso: "desc" },
+      include: { product: true },
+    });
     const rows = campaigns.map(toRow);
     return NextResponse.json({ campaigns: rows });
   } catch (e) {
@@ -24,6 +27,7 @@ export async function POST(req: Request) {
       name: body.name?.trim() || "Nova Campanha",
       delivery: body.delivery || "Ativa",
       actions: body.actions || "Conversões",
+      productId: body.productId || null,
       budget: num(body.budget),
       spent: num(body.spent),
       ctr: num(body.ctr),
@@ -62,7 +66,7 @@ export async function POST(req: Request) {
     if (!data.costPerLandingPageView && data.landingPageViews > 0) data.costPerLandingPageView = spent / data.landingPageViews;
     if (!data.costPerCheckoutInitiated && data.checkoutInitiated > 0) data.costPerCheckoutInitiated = spent / data.checkoutInitiated;
 
-    const created = await db.campaign.create({ data });
+    const created = await db.campaign.create({ data, include: { product: true } });
     return NextResponse.json({ campaign: toRow(created) }, { status: 201 });
   } catch (e) {
     console.error("POST /api/campaigns error", e);

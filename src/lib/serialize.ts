@@ -1,11 +1,29 @@
 // Serialização: Prisma Campaign <-> CampaignRow
-import type { Campaign } from "@prisma/client";
-import type { CampaignRow } from "@/lib/campaign-types";
+import type { Campaign, Product } from "@prisma/client";
+import type { CampaignRow, ProductRow } from "@/lib/campaign-types";
 import { computeGranaNoBolso, computeRoas } from "@/lib/metrics";
 
-export function toRow(c: Campaign): CampaignRow {
+export function toProductRow(p: Product): ProductRow {
+  return {
+    id: p.id,
+    name: p.name,
+    description: p.description,
+    price: p.price,
+    orderBumpName: p.orderBumpName,
+    orderBumpPrice: p.orderBumpPrice,
+    upsellName: p.upsellName,
+    upsellPrice: p.upsellPrice,
+    downsellName: p.downsellName,
+    downsellPrice: p.downsellPrice,
+    url: p.url,
+  };
+}
+
+export function toRow(c: Campaign & { product?: Product | null }): CampaignRow {
   const row: CampaignRow = {
     id: c.id,
+    productId: c.productId,
+    product: c.product ? toProductRow(c.product) : null,
     name: c.name,
     delivery: c.delivery,
     actions: c.actions,

@@ -14,18 +14,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Grana No Bolso · Otimizador de Campanhas Meta Ads",
-  description: "SaaS para otimizar campanhas do Facebook/Instagram Ads com base nas métricas do Gerenciador de Anúncios. Calcule o lucro líquido (Grana No Bolso) e receba recomendações acionáveis.",
-  keywords: ["Meta Ads", "Facebook Ads", "Instagram Ads", "otimização de campanhas", "ROAS", "tráfego pago"],
-  authors: [{ name: "Grana No Bolso" }],
+  title: "No Verde · Otimizador de Campanhas Meta Ads",
+  description: "No Verde: o SaaS que deixa suas campanhas de Meta Ads no lucro. Importe dados do Gerenciador de Anúncios, cadastre seus produtos e receba recomendações precisas para aumentar sua Grana No Bolso.",
+  keywords: ["Meta Ads", "Facebook Ads", "Instagram Ads", "otimização de campanhas", "ROAS", "tráfego pago", "order bump", "upsell"],
+  authors: [{ name: "No Verde" }],
   openGraph: {
-    title: "Grana No Bolso · Otimizador de Meta Ads",
-    description: "Otimize campanhas de Meta Ads com base nas métricas reais e maximize seu lucro líquido.",
+    title: "No Verde · Otimizador de Meta Ads",
+    description: "Suas campanhas no lucro. Sua grana no bolso.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Grana No Bolso",
+    title: "No Verde",
     description: "Otimizador de Campanhas Meta Ads",
   },
 };

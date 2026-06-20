@@ -1,8 +1,24 @@
 // Tipos e mapeamento de campos do Meta Ads Manager
 // Cada entrada descreve uma coluna exportada do Gerenciador de Anúncios da Meta.
 
+export type ProductRow = {
+  id: string;
+  name: string;
+  description?: string | null;
+  price: number;
+  orderBumpName?: string | null;
+  orderBumpPrice: number;
+  upsellName?: string | null;
+  upsellPrice: number;
+  downsellName?: string | null;
+  downsellPrice: number;
+  url?: string | null;
+};
+
 export type CampaignRow = {
   id?: string;
+  productId?: string | null;
+  product?: ProductRow | null;
   name: string;
   delivery: string;
   actions: string;
@@ -86,6 +102,8 @@ export const NUMERIC_FIELDS: (keyof CampaignRow)[] = [
 
 export const EMPTY_ROW: CampaignRow = {
   name: "",
+  productId: null,
+  product: null,
   delivery: "Ativa",
   actions: "",
   budget: 0,

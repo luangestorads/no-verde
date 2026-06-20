@@ -1,4 +1,4 @@
-// Grana No Bolso — Otimizador de Campanhas Meta Ads
+// No Verde — Otimizador de Campanhas Meta Ads
 // Prisma schema (SQLite)
 
 generator client {
@@ -10,10 +10,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Product {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  description String?
+
+  // Funil de ofertas (valores em R$)
+  price          Float @default(0) // Ticket principal (preço do produto)
+  orderBumpName  String?
+  orderBumpPrice Float  @default(0) // Order bump (oferta adicional no checkout)
+  upsellName     String?
+  upsellPrice    Float  @default(0) // Upsell (oferta logo após a compra)
+  downsellName   String?
+  downsellPrice  Float  @default(0) // Downsell (oferta mais barata se recusar o upsell)
+
+  // Extra
+  url String? // página de vendas
+
+  campaigns Campaign[]
+}
+
 model Campaign {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Vínculo com produto (opcional)
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   // Identificação
   name     String // Campanha
