@@ -3,16 +3,25 @@ import { db } from "@/lib/db";
 import { toRow } from "@/lib/serialize";
 import { summarize, computeTicket, fmtBRL } from "@/lib/metrics";
 import { CRITERIOS } from "@/lib/optimizer";
+import { getUserId } from "@/lib/session";
+import { resolveRange, type Period } from "@/lib/date-ranges";
 
 // POST /api/insights/ai
 // Gera uma análise estratégica em linguagem simples via LLM (z-ai-web-dev-sdk),
 // usando os critérios exatos de um grande player de Meta Ads.
 export async function POST(req: Request) {
   try {
+    const userId = await getUserId();
+    if (!userId) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     const body = await req.json().catch(() => ({}));
     const question: string | undefined = typeof body?.question === "string" && body.question.trim() ? body.question.trim() : undefined;
+    const period = (body?.period || "all") as Period;
+    const range = resolveRange(period, body?.from, body?.to);
 
-    const campaigns = await db.campaign.findMany();
+    const campaigns = await db.campaign.findMany({
+      where: { userId, ...(range ? { reportDate: { gte: range.from, lt: range.to } } : {}) },
+      include: { product: true },
+    });
     const rows = campaigns.map(toRow);
     const summary = summarize(rows);
 

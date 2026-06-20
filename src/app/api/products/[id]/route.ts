@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { toProductRow } from "@/lib/serialize";
+import { getUserId } from "@/lib/session";
 import type { ProductRow } from "@/lib/campaign-types";
 
-// PATCH /api/products/[id] — atualiza um produto
+// PATCH /api/products/[id] — só o dono
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const userId = await getUserId();
+    if (!userId) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     const { id } = await params;
+    const owned = await db.product.findFirst({ where: { id, userId } });
+    if (!owned) return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 });
+
     const body = (await req.json()) as Partial<ProductRow>;
     const data: Record<string, unknown> = {};
     if (typeof body.name === "string") data.name = body.name.trim();
@@ -27,10 +33,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 }
 
-// DELETE /api/products/[id]
+// DELETE /api/products/[id] — só o dono
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const userId = await getUserId();
+    if (!userId) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     const { id } = await params;
+    const owned = await db.product.findFirst({ where: { id, userId } });
+    if (!owned) return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 });
     await db.product.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (e) {

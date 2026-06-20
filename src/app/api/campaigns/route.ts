@@ -2,14 +2,31 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { toRow } from "@/lib/serialize";
 import { computeGranaNoBolso, computeRoas } from "@/lib/metrics";
+import { getUserId } from "@/lib/session";
+import { resolveRange, type Period } from "@/lib/date-ranges";
 import type { CampaignRow } from "@/lib/campaign-types";
 
-// GET /api/campaigns — lista todas as campanhas
-export async function GET() {
+// GET /api/campaigns?period=today|yesterday|week|month|year|all|custom&from=&to=
+export async function GET(req: Request) {
   try {
+    const userId = await getUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Não autenticado", campaigns: [] }, { status: 401 });
+    }
+
+    const url = new URL(req.url);
+    const period = (url.searchParams.get("period") || "all") as Period;
+    const from = url.searchParams.get("from") || undefined;
+    const to = url.searchParams.get("to") || undefined;
+    const range = resolveRange(period, from, to);
+
     const campaigns = await db.campaign.findMany({
-      orderBy: { granaNoBolso: "desc" },
+      where: {
+        userId,
+        ...(range ? { reportDate: { gte: range.from, lt: range.to } } : {}),
+      },
       include: { product: true },
+      orderBy: { granaNoBolso: "desc" },
     });
     const rows = campaigns.map(toRow);
     return NextResponse.json({ campaigns: rows });
@@ -19,15 +36,21 @@ export async function GET() {
   }
 }
 
-// POST /api/campaigns — cria uma campanha
+// POST /api/campaigns — cria uma campanha para o usuário autenticado
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as Partial<CampaignRow>;
+    const userId = await getUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    }
+    const body = (await req.json()) as Partial<CampaignRow> & { reportDate?: string };
     const data = {
+      userId,
       name: body.name?.trim() || "Nova Campanha",
       delivery: body.delivery || "Ativa",
       actions: body.actions || "Conversões",
       productId: body.productId || null,
+      reportDate: body.reportDate ? new Date(body.reportDate) : new Date(),
       budget: num(body.budget),
       spent: num(body.spent),
       ctr: num(body.ctr),

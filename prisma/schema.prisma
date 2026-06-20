@@ -1,5 +1,5 @@
 // No Verde — Otimizador de Campanhas Meta Ads
-// Prisma schema (SQLite)
+// Prisma schema (SQLite) — multi-tenant (cada usuário só vê seus dados)
 
 generator client {
   provider = "prisma-client-js"
@@ -10,10 +10,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  campaigns Campaign[]
+  products  Product[]
+}
+
 model Product {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   name        String
   description String?
@@ -37,6 +52,12 @@ model Campaign {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Data do relatório (a que data os dados se referem) — para filtros por período
+  reportDate DateTime @default(now())
 
   // Vínculo com produto (opcional)
   productId String?
@@ -92,4 +113,6 @@ model Campaign {
 
   // Métrica central do SaaS
   granaNoBolso Float @default(0) // Valor de conversão da compra - Valor usado (lucro líquido pós-ads)
+
+  @@index([userId, reportDate])
 }

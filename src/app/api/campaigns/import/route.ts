@@ -2,16 +2,22 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { toRow } from "@/lib/serialize";
 import { parseMetaExport } from "@/lib/meta-import";
+import { getUserId } from "@/lib/session";
 
 // POST /api/campaigns/import
-// Body: { raw: string } — texto colado do Meta Ads Manager (TSV/CSV)
-// Cria todas as campanhas detectadas. Se uma com mesmo nome já existir, atualiza.
+// Body: { raw: string, reportDate?: string } — texto/arquivo do Meta Ads Manager
+// Cadastra as campanhas no nome do usuário logado. Se já existir (mesmo nome + mesmo dia), atualiza.
 export async function POST(req: Request) {
   try {
+    const userId = await getUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    }
     const body = await req.json();
     const raw: string = typeof body?.raw === "string" ? body.raw : "";
+    const reportDate = body?.reportDate ? new Date(body.reportDate) : new Date();
     if (!raw.trim()) {
-      return NextResponse.json({ error: "Conteúdo vazio. Cole os dados exportados do Meta Ads." }, { status: 400 });
+      return NextResponse.json({ error: "Conteúdo vazio. Envie os dados exportados do Meta Ads." }, { status: 400 });
     }
 
     const { rows, detectedColumns, skipped, totalLines } = parseMetaExport(raw);
@@ -21,7 +27,8 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    const existing = await db.campaign.findMany({ include: { product: true } });
+    // Apenas as campanhas DESTE usuário (para detectar duplicatas por nome + data)
+    const existing = await db.campaign.findMany({ where: { userId }, include: { product: true } });
     const existingByName = new Map(existing.map((c) => [c.name.trim().toLowerCase(), c]));
 
     let created = 0;
@@ -30,6 +37,8 @@ export async function POST(req: Request) {
 
     for (const row of rows) {
       const data = {
+        userId,
+        reportDate,
         name: row.name,
         delivery: row.delivery,
         actions: row.actions,

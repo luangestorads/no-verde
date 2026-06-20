@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Loader2, Send, AlertCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import type { DateFilterValue } from "@/components/dashboard/date-filter";
 
 const SUGGESTED = [
   "Quais campanhas eu PAUSO hoje?",
@@ -15,7 +16,7 @@ const SUGGESTED = [
   "Meu anúncio ou minha página é o problema?",
 ];
 
-export function AiPanel({ disabled }: { disabled?: boolean }) {
+export function AiPanel({ disabled, dateFilter }: { disabled?: boolean; dateFilter?: DateFilterValue }) {
   const [content, setContent] = useState<string>("");
   const [question, setQuestion] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -30,7 +31,12 @@ export function AiPanel({ disabled }: { disabled?: boolean }) {
       const res = await fetch("/api/insights/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(q ? { question: q } : {}),
+        body: JSON.stringify({
+          ...(q ? { question: q } : {}),
+          period: dateFilter?.period || "all",
+          from: dateFilter?.from,
+          to: dateFilter?.to,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {

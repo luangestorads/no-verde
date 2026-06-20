@@ -2,12 +2,22 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { toRow } from "@/lib/serialize";
 import { generateSampleCampaigns } from "@/lib/meta-import";
+import { getUserId } from "@/lib/session";
 
-// POST /api/campaigns/seed — popula o banco com dados de exemplo
-export async function POST() {
+// POST /api/campaigns/seed — cria campanhas de exemplo para o usuário logado,
+// com datas variadas para os filtros de período funcionarem.
+export async function POST(req: Request) {
   try {
+    const userId = await getUserId();
+    if (!userId) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+
+    const url = new URL(req.url);
+    const daysBack = Number(url.searchParams.get("days") || "0");
+    const reportDate = new Date();
+    if (daysBack > 0) reportDate.setDate(reportDate.getDate() - daysBack);
+
     const samples = generateSampleCampaigns();
-    const existing = await db.campaign.findMany({ select: { name: true } });
+    const existing = await db.campaign.findMany({ where: { userId }, select: { name: true } });
     const existingNames = new Set(existing.map((c) => c.name.trim().toLowerCase()));
 
     let created = 0;
@@ -16,6 +26,8 @@ export async function POST() {
       if (existingNames.has(row.name.trim().toLowerCase())) continue;
       const c = await db.campaign.create({
         data: {
+          userId,
+          reportDate,
           name: row.name,
           delivery: row.delivery,
           actions: row.actions,
@@ -37,6 +49,7 @@ export async function POST() {
           purchaseConversionValueSite: row.purchaseConversionValueSite,
           roasPurchasesSite: row.roasPurchasesSite,
         },
+        include: { product: true },
       });
       rows.push(toRow(c));
       created++;
