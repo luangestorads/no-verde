@@ -23,11 +23,10 @@ Os dados NÃO se perdem (ficam em `db/custom.db`).
 
 ## Conta de teste
 
-- Email: `joao@teste.com`
-- Senha: `123456`
-- Já tem 24 campanhas de exemplo (8 de hoje, 8 de ontem, 8 de 3 dias atrás)
+**MODO SEM LOGIN** (atual): o app abre direto no dashboard. Um usuário local
+(`eu@noverde.app`) é criado automaticamente. Não tem tela de login nem senha.
 
-Para criar nova conta: tela de login → "Criar agora".
+Se os dados sumirem, é só abrir o app — ele auto-carrega 24 campanhas de exemplo.
 
 ---
 
@@ -44,12 +43,10 @@ Para criar nova conta: tela de login → "Criar agora".
 ## Arquitetura
 
 ### Autenticação e Multi-tenancy
-- `src/lib/auth.ts` — config NextAuth (CredentialsProvider + bcrypt, 12 rounds)
-- `src/lib/session.ts` — helper `getUserId()` / `requireUser()`
-- `src/app/api/auth/[...nextauth]/route.ts` — handler NextAuth
-- `src/app/api/auth/register/route.ts` — criação de conta (senha hasheada)
-- **TODA API** filtra por `userId` — um usuário NUNCA acessa dados de outro
-- Sem autenticação → HTTP 401 em todas as rotas de dados
+- **MODO ATUAL: sem login.** `src/lib/session.ts` cria/usa um usuário local único.
+- O código de NextAuth (`src/lib/auth.ts`, `src/app/api/auth/*`) ainda existe mas não é usado.
+- Toda API continua filtrando por `userId` (o usuário local).
+- Para voltar a ter login: restaurar `src/app/page.tsx` com `getServerSession` + `AuthScreen`.
 
 ### Modelos do banco (`prisma/schema.prisma`)
 - `User` — id, email (unique), name, passwordHash

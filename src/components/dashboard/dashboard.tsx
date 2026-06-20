@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { signOut } from "next-auth/react";
-import { Database, Trash2, RefreshCw, Sparkles, BarChart3, ListChecks, Info, Package, LogOut, CalendarDays } from "lucide-react";
+import { Database, Trash2, RefreshCw, Sparkles, BarChart3, ListChecks, Info, Package, CalendarDays } from "lucide-react";
 import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { ChartsPanel } from "@/components/dashboard/charts-panel";
 import { CampaignTable } from "@/components/dashboard/campaign-table";
@@ -23,7 +22,7 @@ import type { CampaignRow } from "@/lib/campaign-types";
 import type { Summary } from "@/lib/metrics";
 import type { Recommendation, Severity } from "@/lib/optimizer";
 
-export function Dashboard({ userEmail, userName }: { userEmail?: string | null; userName?: string | null }) {
+export function Dashboard() {
   const [campaigns, setCampaigns] = useState<CampaignRow[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
@@ -54,10 +53,7 @@ export function Dashboard({ userEmail, userName }: { userEmail?: string | null; 
         fetch(`/api/campaigns?${q}`),
         fetch(`/api/insights?${q}`),
       ]);
-      if (campRes.status === 401 || insRes.status === 401) {
-        window.location.reload();
-        return;
-      }
+
       const campData = await campRes.json();
       const insData = await insRes.json();
       setCampaigns(campData.campaigns || []);
@@ -81,6 +77,16 @@ export function Dashboard({ userEmail, userName }: { userEmail?: string | null; 
   useEffect(() => {
     if (productsTick > 0) loadAll();
   }, [productsTick, loadAll]);
+
+  // Auto-carrega exemplos na primeira visita (se não tiver dados)
+  const [autoSeeded, setAutoSeeded] = useState(false);
+  useEffect(() => {
+    if (autoSeeded || loading) return;
+    if (campaigns.length === 0) {
+      setAutoSeeded(true);
+      handleSeed();
+    }
+  }, [autoSeeded, loading, campaigns.length]);
 
   async function handleSeed() {
     const t = toast.loading("Carregando campanhas de exemplo…");
@@ -148,7 +154,7 @@ export function Dashboard({ userEmail, userName }: { userEmail?: string | null; 
                 No Verde
               </h1>
               <p className="text-[11px] sm:text-xs text-muted-foreground leading-tight truncate">
-                {userName || userEmail || "Suas campanhas no lucro"}
+                Suas campanhas no lucro · sua grana no bolso
               </p>
             </div>
           </div>
@@ -180,10 +186,6 @@ export function Dashboard({ userEmail, userName }: { userEmail?: string | null; 
               </>
             )}
             <ImportDialog open={importOpen} onOpenChange={setImportOpen} onImported={loadAll} />
-            <Button variant="ghost" size="sm" onClick={() => signOut({ callbackUrl: "/" })} className="gap-2 text-muted-foreground">
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Sair</span>
-            </Button>
           </div>
         </div>
       </header>
