@@ -26,7 +26,11 @@ Os dados NÃO se perdem (ficam em `db/custom.db`).
 **MODO SEM LOGIN** (atual): o app abre direto no dashboard. Um usuário local
 (`eu@noverde.app`) é criado automaticamente. Não tem tela de login nem senha.
 
-Se os dados sumirem, é só abrir o app — ele auto-carrega 24 campanhas de exemplo.
+**O app começa VAZIO** (sem auto-seed). A pessoa que recebe o SaaS vê a tela de
+boas-vindas com 2 botões: "Importar meus dados do Meta Ads" e "Ver com dados de exemplo".
+
+**Erro de hidração resolvido:** removido o `<Providers>` (SessionProvider) do layout.
+Era o que causava o mismatch de IDs do Radix entre servidor e cliente.
 
 ---
 

@@ -78,16 +78,6 @@ export function Dashboard() {
     if (productsTick > 0) loadAll();
   }, [productsTick, loadAll]);
 
-  // Auto-carrega exemplos na primeira visita (se não tiver dados)
-  const [autoSeeded, setAutoSeeded] = useState(false);
-  useEffect(() => {
-    if (autoSeeded || loading) return;
-    if (campaigns.length === 0) {
-      setAutoSeeded(true);
-      handleSeed();
-    }
-  }, [autoSeeded, loading, campaigns.length]);
-
   async function handleSeed() {
     const t = toast.loading("Carregando campanhas de exemplo…");
     try {
