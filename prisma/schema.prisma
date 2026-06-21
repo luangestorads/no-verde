@@ -22,6 +22,16 @@ model User {
   products  Product[]
 }
 
+// Lista de emails de compradores autorizados a se cadastrar.
+// Só quem está nesta lista (e com Gmail) consegue criar conta.
+model AllowedEmail {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  note      String?  // anotação: nome do cliente, data da compra, etc.
+  used      Boolean  @default(false) // true quando já criou a conta
+  createdAt DateTime @default(now())
+}
+
 model Product {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())

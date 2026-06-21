@@ -21,16 +21,28 @@ Os dados NÃO se perdem (ficam em `db/custom.db`).
 
 ---
 
-## Conta de teste
+## Conta de teste e acesso
 
-**MODO SEM LOGIN** (atual): o app abre direto no dashboard. Um usuário local
-(`eu@noverde.app`) é criado automaticamente. Não tem tela de login nem senha.
+### Login (reativado)
+- **Só Gmail** entra (validação no registro + aviso visual se não for Gmail)
+- **Só quem está na lista de compradores** (AllowedEmail) consegue criar conta
+- A senha é por escolha própria do usuário (mín. 6 caracteres, hasheada com bcrypt)
+- Depois de cadastrado, o email é marcado como `used: true` (não pode cadastrar de novo)
 
-**O app começa VAZIO** (sem auto-seed). A pessoa que recebe o SaaS vê a tela de
-boas-vindas com 2 botões: "Importar meus dados do Meta Ads" e "Ver com dados de exemplo".
+### Painel Admin (cadastrar compradores)
+Acesse via URL com a chave admin:
+```
+http://localhost:3000/?admin=701d221beae72e1d8492cc808cb8f1c9804a4e6e23edf408
+```
+A chave está no `.env` (`NO_ADMIN_KEY`). No painel admin você:
+- Adiciona o Gmail do cliente + anotação (ex.: "João, comprou 21/06, R$ 197")
+- Vê a lista de liberados (com status "Aguardando" / "Cadastrou")
+- Remove emails da lista
 
-**Erro de hidração resolvido:** removido o `<Providers>` (SessionProvider) do layout.
-Era o que causava o mismatch de IDs do Radix entre servidor e cliente.
+### Conta de teste já criada
+- Email: `cliente.teste@gmail.com`
+- Senha: `minhasenha123`
+- (Foi cadastrada via o fluxo admin → registro)
 
 ---
 

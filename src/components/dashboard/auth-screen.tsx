@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Sparkles, Loader2, Mail, Lock, User, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { Sparkles, Loader2, Mail, Lock, User, ShieldCheck, Eye, EyeOff, KeyRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function AuthScreen() {
@@ -44,13 +44,14 @@ export function AuthScreen() {
       if (result?.error) {
         throw new Error(mode === "register" ? "Erro ao entrar automaticamente. Faça login." : "Email ou senha incorretos");
       }
-      // Recarrega para buscar a sessão no servidor
       window.location.reload();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha na autenticação");
       setLoading(false);
     }
   }
+
+  const isGmail = email.trim().toLowerCase().endsWith("@gmail.com");
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-background p-4">
@@ -72,7 +73,7 @@ export function AuthScreen() {
             <CardDescription className="text-center">
               {mode === "login"
                 ? "Acesse seu painel de otimização"
-                : "Comece a otimizar suas campanhas agora"}
+                : "Use o Gmail da sua compra e escolha sua senha"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -94,7 +95,7 @@ export function AuthScreen() {
                 </div>
               )}
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-xs">Email</Label>
+                <Label htmlFor="email" className="text-xs">Email (Gmail)</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -102,12 +103,17 @@ export function AuthScreen() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="voce@email.com"
-                    className="pl-9"
+                    placeholder="seu.email@gmail.com"
+                    className={cn("pl-9", email && !isGmail && "border-amber-400 focus-visible:ring-amber-400")}
                     autoComplete="email"
                     required
                   />
                 </div>
+                {email && !isGmail && (
+                  <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                    Só aceitamos emails do Gmail.
+                  </p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="password" className="text-xs">Senha</Label>
@@ -142,7 +148,7 @@ export function AuthScreen() {
             </form>
 
             <div className="text-center text-sm text-muted-foreground mt-4">
-              {mode === "login" ? "Ainda não tem conta? " : "Já tem conta? "}
+              {mode === "login" ? "Ainda não criou sua conta? " : "Já tem conta? "}
               <button
                 type="button"
                 onClick={() => { setMode(mode === "login" ? "register" : "login"); }}
@@ -153,6 +159,18 @@ export function AuthScreen() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Aviso de acesso restrito */}
+        {mode === "register" && (
+          <div className="flex items-start gap-2 mt-4 text-xs text-muted-foreground bg-muted/50 border rounded-lg p-3">
+            <KeyRound className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-500" />
+            <span>
+              Para criar conta, é preciso ter comprado o acesso ao No Verde e ter
+              seu Gmail liberado. Se comprou e não consegue entrar, entre em contato
+              com quem te vendeu.
+            </span>
+          </div>
+        )}
 
         {/* Selos de segurança */}
         <div className="flex items-center justify-center gap-4 mt-5 text-xs text-muted-foreground flex-wrap">

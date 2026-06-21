@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Database, Trash2, RefreshCw, Sparkles, BarChart3, ListChecks, Info, Package, CalendarDays, Globe } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { Database, Trash2, RefreshCw, Sparkles, BarChart3, ListChecks, Info, Package, CalendarDays, Globe, LogOut } from "lucide-react";
 import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { ChartsPanel } from "@/components/dashboard/charts-panel";
 import { CampaignTable } from "@/components/dashboard/campaign-table";
@@ -23,7 +24,7 @@ import type { CampaignRow } from "@/lib/campaign-types";
 import type { Summary } from "@/lib/metrics";
 import type { Recommendation, Severity } from "@/lib/optimizer";
 
-export function Dashboard() {
+export function Dashboard({ userEmail, userName }: { userEmail?: string | null; userName?: string | null }) {
   const [campaigns, setCampaigns] = useState<CampaignRow[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
@@ -145,7 +146,7 @@ export function Dashboard() {
                 No Verde
               </h1>
               <p className="text-[11px] sm:text-xs text-muted-foreground leading-tight truncate">
-                Suas campanhas no lucro · sua grana no bolso
+                {userName || userEmail || "Suas campanhas no lucro"}
               </p>
             </div>
           </div>
@@ -177,6 +178,10 @@ export function Dashboard() {
               </>
             )}
             <ImportDialog open={importOpen} onOpenChange={setImportOpen} onImported={loadAll} />
+            <Button variant="ghost" size="sm" onClick={() => signOut({ callbackUrl: "/" })} className="gap-2 text-muted-foreground">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Sair</span>
+            </Button>
           </div>
         </div>
       </header>
