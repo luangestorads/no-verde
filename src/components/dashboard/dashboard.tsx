@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Database, Trash2, RefreshCw, Sparkles, BarChart3, ListChecks, Info, Package, CalendarDays } from "lucide-react";
+import { Database, Trash2, RefreshCw, Sparkles, BarChart3, ListChecks, Info, Package, CalendarDays, Globe } from "lucide-react";
 import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { ChartsPanel } from "@/components/dashboard/charts-panel";
 import { CampaignTable } from "@/components/dashboard/campaign-table";
@@ -16,6 +16,7 @@ import { CampaignDetailDrawer } from "@/components/dashboard/campaign-detail-dra
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { CriteriaGuide } from "@/components/dashboard/criteria-guide";
 import { ProductsPanel } from "@/components/dashboard/products-panel";
+import { MultiloginPanel } from "@/components/dashboard/multilogin-panel";
 import { DateFilter, type DateFilterValue } from "@/components/dashboard/date-filter";
 import { ProtectionGuard } from "@/components/dashboard/protection-guard";
 import type { CampaignRow } from "@/lib/campaign-types";
@@ -219,7 +220,7 @@ export function Dashboard() {
             <KpiCards summary={summary} />
 
             <Tabs value={tab} onValueChange={setTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 max-w-lg">
+              <TabsList className="grid w-full grid-cols-5 max-w-2xl">
                 <TabsTrigger value="overview" className="gap-1.5 text-xs sm:text-sm">
                   <BarChart3 className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Visão Geral</span>
@@ -234,6 +235,11 @@ export function Dashboard() {
                   <Package className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Produtos</span>
                   <span className="sm:hidden">Prod.</span>
+                </TabsTrigger>
+                <TabsTrigger value="multilogin" className="gap-1.5 text-xs sm:text-sm">
+                  <Globe className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Multilogin</span>
+                  <span className="sm:hidden">Multi</span>
                 </TabsTrigger>
                 <TabsTrigger value="ai" className="gap-1.5 text-xs sm:text-sm">
                   <Sparkles className="h-3.5 w-3.5" />
@@ -260,6 +266,10 @@ export function Dashboard() {
 
               <TabsContent value="products" className="mt-4">
                 <ProductsPanel onProductsChange={() => setProductsTick((t) => t + 1)} />
+              </TabsContent>
+
+              <TabsContent value="multilogin" className="mt-4">
+                <MultiloginPanel />
               </TabsContent>
 
               <TabsContent value="ai" className="mt-4 space-y-4">
