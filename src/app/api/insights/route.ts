@@ -36,7 +36,7 @@ export async function GET(req: Request) {
       bom: recommendations.filter((r) => r.severity === "bom").length,
     };
     const upside = recommendations
-      .filter((r) => r.action === "aumentar_orcamento" || r.action === "otimizar_leilao")
+      .filter((r) => r.action === "aumentar_orcamento")
       .reduce((a, r) => a + Math.max(0, r.impact), 0);
     const risk = recommendations
       .filter((r) => r.severity === "critico")

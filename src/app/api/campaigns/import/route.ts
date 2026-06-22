@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
     let created = 0;
     let updated = 0;
-    const resultRows = [];
+    const resultRows: ReturnType<typeof toRow>[] = [];
 
     for (const row of rows) {
       const data = {

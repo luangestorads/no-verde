@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     const existingNames = new Set(existing.map((c) => c.name.trim().toLowerCase()));
 
     let created = 0;
-    const rows = [];
+    const rows: ReturnType<typeof toRow>[] = [];
     for (const row of samples) {
       if (existingNames.has(row.name.trim().toLowerCase())) continue;
       const c = await db.campaign.create({
