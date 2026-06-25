@@ -7,5 +7,5 @@ export async function getSession() {
 
 export async function getUserId(): Promise<string | null> {
   const session = await getSession();
-  return (session?.user as any)?.id ?? session?.user?.email ?? null;
+  return (session?.user as any)?.id ?? null;
 }
