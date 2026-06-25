@@ -55,7 +55,7 @@ export type CampaignRow = {
 // Mapeia os nomes EXATOS das colunas do Meta Ads Manager (PT-BR) para os campos internos.
 // O parser é tolerante: também aceita variações em minúsculas/sem acento.
 export const META_FIELD_MAP: { label: string; key: keyof CampaignRow }[] = [
-  { label: "Campanha", key: "name" },
+  { label: "Campanha", key: "name" },`n  { label: "Nome do anúncio", key: "name" },
   { label: "Veiculação", key: "delivery" },
   { label: "Ações", key: "actions" },
   { label: "Orçamento", key: "budget" },
