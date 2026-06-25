@@ -1,6 +1,3 @@
-// Tipos e mapeamento de campos do Meta Ads Manager
-// Cada entrada descreve uma coluna exportada do Gerenciador de Anúncios da Meta.
-
 export type ProductRow = {
   id: string;
   name: string;
@@ -52,43 +49,41 @@ export type CampaignRow = {
   granaNoBolso: number;
 };
 
-// Mapeia os nomes EXATOS das colunas do Meta Ads Manager (PT-BR) para os campos internos.
-// O parser é tolerante: também aceita variações em minúsculas/sem acento.
 export const META_FIELD_MAP: { label: string; key: keyof CampaignRow }[] = [
-  { label: "Campanha", key: "name" },`n  { label: "Nome do anúncio", key: "name" },
-  { label: "Veiculação", key: "delivery" },
-  { label: "Ações", key: "actions" },
-  { label: "Orçamento", key: "budget" },
+  { label: "Campanha", key: "name" },
+  { label: "Nome do anuncio", key: "name" },
+  { label: "Veiculacao", key: "delivery" },
+  { label: "Acoes", key: "actions" },
+  { label: "Orcamento", key: "budget" },
   { label: "Valor usado", key: "spent" },
   { label: "CTR (todos)", key: "ctr" },
-  { label: "Finalizações de compra iniciadas", key: "checkoutInitiated" },
-  { label: "Finalizações de compra iniciadas no app para celular", key: "checkoutInitiatedApp" },
-  { label: "Finalizações da compra iniciadas no site", key: "checkoutInitiatedSite" },
-  { label: "Finalizações da compra iniciadas offline", key: "checkoutInitiatedOffline" },
-  { label: "Finalizações da compra iniciadas na Meta", key: "checkoutInitiatedMeta" },
-  { label: "Visualizações da página de destino", key: "landingPageViews" },
-  { label: "Visualizações da página de destino do app", key: "landingPageViewsApp" },
-  { label: "Visualizações da página de destino do site", key: "landingPageViewsSite" },
+  { label: "Finalizacoes de compra iniciadas", key: "checkoutInitiated" },
+  { label: "Finalizacoes de compra iniciadas no app para celular", key: "checkoutInitiatedApp" },
+  { label: "Finalizacoes da compra iniciadas no site", key: "checkoutInitiatedSite" },
+  { label: "Finalizacoes da compra iniciadas offline", key: "checkoutInitiatedOffline" },
+  { label: "Finalizacoes da compra iniciadas na Meta", key: "checkoutInitiatedMeta" },
+  { label: "Visualizacoes da pagina de destino", key: "landingPageViews" },
+  { label: "Visualizacoes da pagina de destino do app", key: "landingPageViewsApp" },
+  { label: "Visualizacoes da pagina de destino do site", key: "landingPageViewsSite" },
   { label: "Compras", key: "purchases" },
   { label: "Compras no app", key: "purchasesApp" },
   { label: "Compras no site", key: "purchasesSite" },
   { label: "Compras offline", key: "purchasesOffline" },
   { label: "Compras na Meta", key: "purchasesMeta" },
-  { label: "Custo por visualização da página de destino", key: "costPerLandingPageView" },
-  { label: "Custo por finalização de compra iniciada", key: "costPerCheckoutInitiated" },
+  { label: "Custo por visualizacao da pagina de destino", key: "costPerLandingPageView" },
+  { label: "Custo por finalizacao de compra iniciada", key: "costPerCheckoutInitiated" },
   { label: "Custo por compra", key: "costPerPurchase" },
-  { label: "Valor de conversão da compra", key: "purchaseConversionValue" },
-  { label: "Valor de conversão das compras no app", key: "purchaseConversionValueApp" },
-  { label: "Valor de conversão da compra no site", key: "purchaseConversionValueSite" },
-  { label: "Valor de conversão de compras offline", key: "purchaseConversionValueOffline" },
-  { label: "Valor de conversão da compra na Meta", key: "purchaseConversionValueMeta" },
+  { label: "Valor de conversao da compra", key: "purchaseConversionValue" },
+  { label: "Valor de conversao das compras no app", key: "purchaseConversionValueApp" },
+  { label: "Valor de conversao da compra no site", key: "purchaseConversionValueSite" },
+  { label: "Valor de conversao de compras offline", key: "purchaseConversionValueOffline" },
+  { label: "Valor de conversao da compra na Meta", key: "purchaseConversionValueMeta" },
   { label: "ROAS (retorno sobre o investimento em publicidade) das compras", key: "roasPurchases" },
   { label: "ROAS (retorno sobre o investimento em publicidade) das compras no site", key: "roasPurchasesSite" },
   { label: "Retorno sobre o investimento em publicidade (ROAS) das compras no app", key: "roasPurchasesApp" },
   { label: "Grana No Bolso", key: "granaNoBolso" },
 ];
 
-// Lista de campos numéricos (para conversão segura no parse).
 export const NUMERIC_FIELDS: (keyof CampaignRow)[] = [
   "budget", "spent", "ctr",
   "checkoutInitiated", "checkoutInitiatedApp", "checkoutInitiatedSite", "checkoutInitiatedOffline", "checkoutInitiatedMeta",
