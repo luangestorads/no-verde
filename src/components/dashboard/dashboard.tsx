@@ -15,6 +15,7 @@ import { ImportDialog } from "@/components/dashboard/import-dialog";
 import { CampaignDetailDrawer } from "@/components/dashboard/campaign-detail-drawer";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { CriteriaGuide } from "@/components/dashboard/criteria-guide";
+import { ChatPanel } from "@/components/dashboard/chat-panel";
 import { ProductsPanel } from "@/components/dashboard/products-panel";
 import { MultiloginPanel } from "@/components/dashboard/multilogin-panel";
 import { DateFilter, type DateFilterValue } from "@/components/dashboard/date-filter";
@@ -273,6 +274,7 @@ export function Dashboard() {
               </TabsContent>
 
               <TabsContent value="ai" className="mt-4 space-y-4">
+                <ChatPanel />
                 <AiPanel campaigns={campaigns} avgTicket={100} disabled={!hasData} dateFilter={dateFilter} />
                 <CriteriaGuide />
               </TabsContent>
