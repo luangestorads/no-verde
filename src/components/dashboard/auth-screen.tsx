@@ -2,187 +2,87 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { toast } from "sonner";
-import { Sparkles, Loader2, Mail, Lock, User, ShieldCheck, Eye, EyeOff, KeyRound } from "lucide-react";
-import { cn } from "@/lib/utils";
 
-export function AuthScreen() {
-  const [mode, setMode] = useState<"login" | "register">("login");
+export function AuthScreen({ onBack }: { onBack?: () => void }) {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  async function submit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim() || !password) return;
-
     setLoading(true);
-    try {
-      if (mode === "register") {
-        const res = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, name }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || "Erro ao criar conta");
-        toast.success("Conta criada! Entrando…");
-      }
+    setError("");
 
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
 
-      if (result?.error) {
-        throw new Error(mode === "register" ? "Erro ao entrar automaticamente. Faça login." : "Email ou senha incorretos");
-      }
-      window.location.reload();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Falha na autenticação");
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error || "Email não liberado");
       setLoading(false);
+      return;
     }
+
+    signIn("credentials", {
+      email,
+      password: "no-verde-auto",
+      callbackUrl: "/",
+    });
   }
 
-  const isGmail = email.trim().toLowerCase().endsWith("@gmail.com");
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-background p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-6">
-          <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/30 mb-3">
-            <Sparkles className="h-7 w-7 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight">No Verde</h1>
-          <p className="text-sm text-muted-foreground mt-1">Suas campanhas no lucro · sua grana no bolso</p>
-        </div>
-
-        <Card className="shadow-xl border-border/60">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-xl text-center">
-              {mode === "login" ? "Entrar" : "Criar conta"}
-            </CardTitle>
-            <CardDescription className="text-center">
-              {mode === "login"
-                ? "Acesse seu painel de otimização"
-                : "Use o Gmail da sua compra e escolha sua senha"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={submit} className="space-y-3.5">
-              {mode === "register" && (
-                <div className="space-y-1.5">
-                  <Label htmlFor="name" className="text-xs">Nome (opcional)</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Seu nome"
-                      className="pl-9"
-                      autoComplete="name"
-                    />
-                  </div>
-                </div>
-              )}
-              <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-xs">Email (Gmail)</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="seu.email@gmail.com"
-                    className={cn("pl-9", email && !isGmail && "border-amber-400 focus-visible:ring-amber-400")}
-                    autoComplete="email"
-                    required
-                  />
-                </div>
-                {email && !isGmail && (
-                  <p className="text-[11px] text-amber-600 dark:text-amber-400">
-                    Só aceitamos emails do Gmail.
-                  </p>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="password" className="text-xs">Senha</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type={showPass ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={mode === "register" ? "Mínimo 6 caracteres" : "••••••••"}
-                    className="pl-9 pr-9"
-                    autoComplete={mode === "register" ? "new-password" : "current-password"}
-                    required
-                    minLength={mode === "register" ? 6 : undefined}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPass((s) => !s)}
-                    className="absolute right-2.5 top-2 text-muted-foreground hover:text-foreground"
-                    aria-label={showPass ? "Ocultar senha" : "Mostrar senha"}
-                  >
-                    {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <Button type="submit" disabled={loading} className="w-full h-10 gap-2">
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {mode === "login" ? "Entrar" : "Criar conta"}
-              </Button>
-            </form>
-
-            <div className="text-center text-sm text-muted-foreground mt-4">
-              {mode === "login" ? "Ainda não criou sua conta? " : "Já tem conta? "}
-              <button
-                type="button"
-                onClick={() => { setMode(mode === "login" ? "register" : "login"); }}
-                className="font-medium text-emerald-600 dark:text-emerald-400 hover:underline"
-              >
-                {mode === "login" ? "Criar agora" : "Entrar"}
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Aviso de acesso restrito */}
-        {mode === "register" && (
-          <div className="flex items-start gap-2 mt-4 text-xs text-muted-foreground bg-muted/50 border rounded-lg p-3">
-            <KeyRound className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-500" />
-            <span>
-              Para criar conta, é preciso ter comprado o acesso ao No Verde e ter
-              seu Gmail liberado. Se comprou e não consegue entrar, entre em contato
-              com quem te vendeu.
-            </span>
-          </div>
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="text-muted-foreground hover:text-foreground mb-8 flex items-center gap-2 text-sm transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            Voltar
+          </button>
         )}
 
-        {/* Selos de segurança */}
-        <div className="flex items-center justify-center gap-4 mt-5 text-xs text-muted-foreground flex-wrap">
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-            Senha criptografada (bcrypt)
-          </span>
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-            Dados isolados por conta
-          </span>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-verde-400 mb-2">No Verde</h1>
+          <p className="text-muted-foreground">Faça login para acessar</p>
         </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="seu@email.com"
+              required
+              className="w-full px-4 py-3 rounded-xl bg-card border border-border focus:border-verde-500 focus:ring-1 focus:ring-verde-500 outline-none transition-all"
+            />
+          </div>
+
+          {error && (
+            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-verde-500 hover:bg-verde-600 disabled:opacity-50 text-white font-semibold rounded-xl transition-all"
+          >
+            {loading ? "Entrando..." : "Entrar"}
+          </button>
+        </form>
+
+        <p className="text-center text-xs text-muted-foreground/50 mt-8">
+          Acesso restrito — seu email precisa estar liberado pelo administrador
+        </p>
       </div>
     </div>
   );
