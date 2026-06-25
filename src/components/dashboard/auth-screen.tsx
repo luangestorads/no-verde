@@ -49,7 +49,7 @@ export function AuthScreen({ onBack }: { onBack?: () => void }) {
 
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-verde-400 mb-2">No Verde</h1>
-          <p className="text-muted-foreground">Facca login para acessar</p>
+          <p className="text-muted-foreground">Entre com seu email para acessar</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
