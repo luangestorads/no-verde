@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useSession, signIn } from "next-auth/react";
 import { useState, useEffect } from "react";
@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { AuthScreen } from "@/components/dashboard/auth-screen";
 
 const Dashboard = dynamic(
-  () => import("@/components/dashboard/dashboard").then((m) => m.default),
+  () => import("@/components/dashboard/dashboard").then((m: any) => m.Dashboard || m.default),
   { ssr: false, loading: () => <LoadingSkeleton /> }
 );
 
@@ -147,7 +147,7 @@ export default function Page() {
 
   if (isAdmin) {
     const AdminPanel = dynamic(
-      () => import("@/components/dashboard/admin-panel").then((m: any) => m.default),
+      () => import("@/components/dashboard/admin-panel").then((m: any) => m.Dashboard || m.default),
       { ssr: false }
     );
     return <AdminPanel />;

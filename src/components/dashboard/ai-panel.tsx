@@ -16,8 +16,10 @@ interface Campaign {
 }
 
 interface AIPanelProps {
-  campaigns: Campaign[];
+  campaigns?: Campaign[];
   avgTicket?: number;
+  disabled?: boolean;
+  dateFilter?: any;
 }
 
 function getSignal(roas: number, cpa: number, ctr: number, avgTicket: number) {
@@ -32,35 +34,35 @@ function getSignal(roas: number, cpa: number, ctr: number, avgTicket: number) {
 
 function getRecommendation(c: Campaign, signal: string, avgTicket: number) {
   if (c.status === "PAUSED") {
-    return { text: "Campanha pausada. Considere reativar se o histórico era positivo.", type: "info" as const };
+    return { text: "Campanha pausada. Considere reativar se o historico era positivo.", type: "info" as const };
   }
   if (signal === "green") {
-    return { text: `Ótimo desempenho! ROAS de ${c.roas.toFixed(2)}x. Considere escalar o orçamento em 20%.`, type: "success" as const };
+    return { text: "Otimo desempenho! ROAS de " + c.roas.toFixed(2) + "x. Considere escalar o orcamento em 20%.", type: "success" as const };
   }
   if (signal === "yellow") {
-    const issues = [];
-    if (c.roas < 2) issues.push(`ROAS baixo (${c.roas.toFixed(2)}x)`);
-    if (c.cpa > avgTicket * 0.6) issues.push(`CPA alto (R$${c.cpa.toFixed(2)})`);
-    if (c.ctr < 2) issues.push(`CTR baixo (${c.ctr.toFixed(1)}%)`);
-    return { text: `Atenção: ${issues.join(", ")}. Teste novos criativos ou ajuste o público-alvo.`, type: "warning" as const };
+    const issues: string[] = [];
+    if (c.roas < 2) issues.push("ROAS baixo (" + c.roas.toFixed(2) + "x)");
+    if (c.cpa > avgTicket * 0.6) issues.push("CPA alto (R$" + c.cpa.toFixed(2) + ")");
+    if (c.ctr < 2) issues.push("CTR baixo (" + c.ctr.toFixed(1) + "%)");
+    return { text: "Atencao: " + issues.join(", ") + ". Teste novos criativos ou ajuste o publico-alvo.", type: "warning" as const };
   }
-  return { text: `Campanha no vermelho! ROAS ${c.roas.toFixed(2)}x e CPA R$${c.cpa.toFixed(2)}. Recomendo pausar e revisar a estratégia.`, type: "danger" as const };
+  return { text: "Campanha no vermelho! ROAS " + c.roas.toFixed(2) + "x e CPA R$" + c.cpa.toFixed(2) + ". Recomendo pausar e revisar a estrategia.", type: "danger" as const };
 }
 
-const typeStyles = {
+const typeStyles: Record<string, string> = {
   success: "border-verde-500/30 bg-verde-500/5 text-verde-400",
   warning: "border-yellow-500/30 bg-yellow-500/5 text-yellow-400",
   danger: "border-red-500/30 bg-red-500/5 text-red-400",
   info: "border-blue-500/30 bg-blue-500/5 text-blue-400",
 };
 
-const signalColors = {
+const signalColors: Record<string, string> = {
   green: "bg-verde-500",
   yellow: "bg-yellow-500",
   red: "bg-red-500",
 };
 
-export default function AIPanel({ campaigns, avgTicket = 100 }: AIPanelProps) {
+export function AiPanel({ campaigns = [], avgTicket = 100, disabled = false }: AIPanelProps) {
   const [loading, setLoading] = useState(false);
   const [analyzed, setAnalyzed] = useState(false);
 
@@ -73,7 +75,6 @@ export default function AIPanel({ campaigns, avgTicket = 100 }: AIPanelProps) {
   }
 
   const activeCampaigns = campaigns.filter((c) => c.status !== "PAUSED");
-  const pausedCampaigns = campaigns.filter((c) => c.status === "PAUSED");
   const greenCount = activeCampaigns.filter((c) => getSignal(c.roas, c.cpa, c.ctr, avgTicket) === "green").length;
   const yellowCount = activeCampaigns.filter((c) => getSignal(c.roas, c.cpa, c.ctr, avgTicket) === "yellow").length;
   const redCount = activeCampaigns.filter((c) => getSignal(c.roas, c.cpa, c.ctr, avgTicket) === "red").length;
@@ -82,7 +83,7 @@ export default function AIPanel({ campaigns, avgTicket = 100 }: AIPanelProps) {
     <Card className="border-border">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
-          🤖 Análise da IA
+          IA - Analise de Campanhas
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -95,7 +96,7 @@ export default function AIPanel({ campaigns, avgTicket = 100 }: AIPanelProps) {
               </div>
               <div className="p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
                 <div className="text-2xl font-bold text-yellow-400">{yellowCount}</div>
-                <div className="text-xs text-yellow-400/70">Atenção</div>
+                <div className="text-xs text-yellow-400/70">Atencao</div>
               </div>
               <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
                 <div className="text-2xl font-bold text-red-400">{redCount}</div>
@@ -116,29 +117,26 @@ export default function AIPanel({ campaigns, avgTicket = 100 }: AIPanelProps) {
               const signal = getSignal(c.roas, c.cpa, c.ctr, avgTicket);
               const rec = getRecommendation(c, signal, avgTicket);
               return (
-                <div key={c.id} className={`p-3 rounded-xl border ${typeStyles[rec.type]} text-sm`}>
+                <div key={c.id} className={"p-3 rounded-xl border " + (typeStyles[rec.type] || "") + " text-sm"}>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`w-2.5 h-2.5 rounded-full ${signalColors[signal]}`} />
+                    <span className={"w-2.5 h-2.5 rounded-full " + (signalColors[signal] || "")} />
                     <span className="font-medium">{c.name}</span>
                   </div>
                   <p className="opacity-80">{rec.text}</p>
                 </div>
               );
             })}
-            {pausedCampaigns.length > 0 && (
-              <div className="text-xs text-muted-foreground text-center pt-2">
-                + {pausedCampaigns.length} campanha(s) pausada(s) não analisada(s)
-              </div>
-            )}
             <button
               onClick={() => setAnalyzed(false)}
               className="w-full py-2 border border-border hover:bg-accent rounded-xl text-sm transition-all"
             >
-              Nova análise
+              Nova analise
             </button>
           </div>
         )}
       </CardContent>
     </Card>
   );
-}   
+}
+
+export default AiPanel;

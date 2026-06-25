@@ -10,7 +10,7 @@ import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { ChartsPanel } from "@/components/dashboard/charts-panel";
 import { CampaignTable } from "@/components/dashboard/campaign-table";
 import { OptimizationPanel } from "@/components/dashboard/optimization-panel";
-import { AiPanel } from "@/components/dashboard/ai-panel";
+import AiPanel from "@/components/dashboard/ai-panel";
 import { ImportDialog } from "@/components/dashboard/import-dialog";
 import { CampaignDetailDrawer } from "@/components/dashboard/campaign-detail-drawer";
 import { EmptyState } from "@/components/dashboard/empty-state";

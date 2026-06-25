@@ -4,3 +4,8 @@ import { authOptions } from "./auth";
 export async function getSession() {
   return await getServerSession(authOptions);
 }
+
+export async function getUserId(): Promise<string | null> {
+  const session = await getSession();
+  return (session?.user as any)?.id ?? session?.user?.email ?? null;
+}

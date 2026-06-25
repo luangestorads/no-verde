@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
-import AdminPanel from "@/components/dashboard/admin-panel";
+import { AdminPanel } from "@/components/dashboard/admin-panel";
 
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -23,13 +23,13 @@ export default function AdminPage() {
     if (res.ok) {
       setAuthenticated(true);
     } else {
-      setError("Chave inválida");
+      setError("Chave invalida");
     }
     setLoading(false);
   }
 
   if (authenticated) {
-    return <AdminPanel />;
+    return <AdminPanel adminKey={key} />;
   }
 
   return (
