@@ -170,7 +170,7 @@ export default function Page() {
       onLogin={() => setView("auth")}
       onDemo={() => {
         fetch("/api/campaigns/seed", { method: "POST" }).then(() => {
-          signIn("credentials", { email: "demo@noverde.com", password: "demo", callbackUrl: "/" });
+          signIn("credentials", { email: "demo@noverde.com", password: "demo123", callbackUrl: "/" });
         });
       }}
     />
