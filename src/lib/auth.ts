@@ -25,7 +25,7 @@ export const authOptions: NextAuthOptions = {
 
         if (!user) {
           user = await db.user.create({
-            data: { email: credentials.email, name: credentials.email.split("@")[0] },
+            data: { email: credentials.email, name: credentials.email.split("@")[0], passwordHash: "no-password" },
           });
         }
 
