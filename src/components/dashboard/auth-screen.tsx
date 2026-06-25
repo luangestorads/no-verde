@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 
 export function AuthScreen({ onBack }: { onBack?: () => void }) {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,14 +23,14 @@ export function AuthScreen({ onBack }: { onBack?: () => void }) {
     const data = await res.json();
 
     if (!res.ok) {
-      setError(data.error || "Email não liberado");
+      setError(data.error || "Email nao liberado");
       setLoading(false);
       return;
     }
 
     signIn("credentials", {
       email,
-      password: "no-verde-auto",
+      password: password || "123456",
       callbackUrl: "/",
     });
   }
@@ -49,7 +50,7 @@ export function AuthScreen({ onBack }: { onBack?: () => void }) {
 
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-verde-400 mb-2">No Verde</h1>
-          <p className="text-muted-foreground">Faça login para acessar</p>
+          <p className="text-muted-foreground">Facca login para acessar</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -61,6 +62,19 @@ export function AuthScreen({ onBack }: { onBack?: () => void }) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seu@email.com"
               required
+              className="w-full px-4 py-3 rounded-xl bg-card border border-border focus:border-verde-500 focus:ring-1 focus:ring-verde-500 outline-none transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Senha</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Sua senha (min. 6 caracteres)"
+              required
+              minLength={6}
               className="w-full px-4 py-3 rounded-xl bg-card border border-border focus:border-verde-500 focus:ring-1 focus:ring-verde-500 outline-none transition-all"
             />
           </div>
