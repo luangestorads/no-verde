@@ -273,7 +273,7 @@ export function Dashboard() {
               </TabsContent>
 
               <TabsContent value="ai" className="mt-4 space-y-4">
-                <AiPanel campaigns={campaigns} avgTicket={summary ? (summary.revenue / Math.max(summary.purchases, 1)) : 100} disabled={!hasData} dateFilter={dateFilter} />
+                <AiPanel campaigns={campaigns} avgTicket={100} disabled={!hasData} dateFilter={dateFilter} />
                 <CriteriaGuide />
               </TabsContent>
             </Tabs>

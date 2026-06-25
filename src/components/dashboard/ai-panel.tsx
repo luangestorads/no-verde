@@ -2,51 +2,40 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface Campaign {
-  id: string;
-  name: string;
-  spend: number;
-  revenue: number;
-  roas: number;
-  cpa: number;
-  ctr: number;
-  purchases: number;
-  status: string;
-}
+import type { CampaignRow } from "@/lib/campaign-types";
 
 interface AIPanelProps {
-  campaigns?: Campaign[];
+  campaigns?: CampaignRow[];
   avgTicket?: number;
   disabled?: boolean;
   dateFilter?: any;
 }
 
-function getSignal(roas: number, cpa: number, ctr: number, avgTicket: number) {
+function getSignal(row: CampaignRow, avgTicket: number) {
   let score = 0;
-  if (roas >= 2) score++;
-  if (cpa <= avgTicket * 0.6) score++;
-  if (ctr >= 2) score++;
+  if (row.roasPurchases >= 2) score++;
+  if (row.costPerPurchase <= avgTicket * 0.6 && row.costPerPurchase > 0) score++;
+  if (row.ctr >= 2) score++;
   if (score >= 2) return "green";
   if (score >= 1) return "yellow";
   return "red";
 }
 
-function getRecommendation(c: Campaign, signal: string, avgTicket: number) {
-  if (c.status === "PAUSED") {
+function getRecommendation(c: CampaignRow, signal: string, avgTicket: number) {
+  if (c.delivery === "Pausada") {
     return { text: "Campanha pausada. Considere reativar se o historico era positivo.", type: "info" as const };
   }
   if (signal === "green") {
-    return { text: "Otimo desempenho! ROAS de " + c.roas.toFixed(2) + "x. Considere escalar o orcamento em 20%.", type: "success" as const };
+    return { text: "Otimo desempenho! ROAS de " + c.roasPurchases.toFixed(2) + "x. Considere escalar o orcamento em 20%.", type: "success" as const };
   }
   if (signal === "yellow") {
     const issues: string[] = [];
-    if (c.roas < 2) issues.push("ROAS baixo (" + c.roas.toFixed(2) + "x)");
-    if (c.cpa > avgTicket * 0.6) issues.push("CPA alto (R$" + c.cpa.toFixed(2) + ")");
+    if (c.roasPurchases < 2) issues.push("ROAS baixo (" + c.roasPurchases.toFixed(2) + "x)");
+    if (c.costPerPurchase > avgTicket * 0.6) issues.push("CPA alto (R$" + c.costPerPurchase.toFixed(2) + ")");
     if (c.ctr < 2) issues.push("CTR baixo (" + c.ctr.toFixed(1) + "%)");
     return { text: "Atencao: " + issues.join(", ") + ". Teste novos criativos ou ajuste o publico-alvo.", type: "warning" as const };
   }
-  return { text: "Campanha no vermelho! ROAS " + c.roas.toFixed(2) + "x e CPA R$" + c.cpa.toFixed(2) + ". Recomendo pausar e revisar a estrategia.", type: "danger" as const };
+  return { text: "Campanha no vermelho! ROAS " + c.roasPurchases.toFixed(2) + "x e CPA R$" + c.costPerPurchase.toFixed(2) + ". Recomendo pausar e revisar a estrategia.", type: "danger" as const };
 }
 
 const typeStyles: Record<string, string> = {
@@ -74,10 +63,10 @@ export function AiPanel({ campaigns = [], avgTicket = 100, disabled = false }: A
     }, 1500);
   }
 
-  const activeCampaigns = campaigns.filter((c) => c.status !== "PAUSED");
-  const greenCount = activeCampaigns.filter((c) => getSignal(c.roas, c.cpa, c.ctr, avgTicket) === "green").length;
-  const yellowCount = activeCampaigns.filter((c) => getSignal(c.roas, c.cpa, c.ctr, avgTicket) === "yellow").length;
-  const redCount = activeCampaigns.filter((c) => getSignal(c.roas, c.cpa, c.ctr, avgTicket) === "red").length;
+  const activeCampaigns = campaigns.filter((c) => c.delivery !== "Pausada");
+  const greenCount = activeCampaigns.filter((c) => getSignal(c, avgTicket) === "green").length;
+  const yellowCount = activeCampaigns.filter((c) => getSignal(c, avgTicket) === "yellow").length;
+  const redCount = activeCampaigns.filter((c) => getSignal(c, avgTicket) === "red").length;
 
   return (
     <Card className="border-border">
@@ -114,13 +103,14 @@ export function AiPanel({ campaigns = [], avgTicket = 100, disabled = false }: A
         ) : (
           <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
             {campaigns.map((c) => {
-              const signal = getSignal(c.roas, c.cpa, c.ctr, avgTicket);
+              const signal = getSignal(c, avgTicket);
               const rec = getRecommendation(c, signal, avgTicket);
+              const name = c.name || "Sem nome";
               return (
-                <div key={c.id} className={"p-3 rounded-xl border " + (typeStyles[rec.type] || "") + " text-sm"}>
+                <div key={c.id || name} className={"p-3 rounded-xl border " + (typeStyles[rec.type] || "") + " text-sm"}>
                   <div className="flex items-center gap-2 mb-1">
                     <span className={"w-2.5 h-2.5 rounded-full " + (signalColors[signal] || "")} />
-                    <span className="font-medium">{c.name}</span>
+                    <span className="font-medium">{name}</span>
                   </div>
                   <p className="opacity-80">{rec.text}</p>
                 </div>
