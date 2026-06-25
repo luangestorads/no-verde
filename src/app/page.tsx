@@ -1,10 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useSession, signIn } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { AuthScreen } from "@/components/dashboard/auth-screen";
-import AdminPanel from "@/components/dashboard/admin-panel";
 
 const Dashboard = dynamic(
   () => import("@/components/dashboard/dashboard").then((m) => m.default),
@@ -26,18 +25,16 @@ function LoadingSkeleton() {
   );
 }
 
-// ==================== LANDING PAGE ====================
 function LandingPage({ onLogin, onDemo }: { onLogin: () => void; onDemo: () => void }) {
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-verde-900/20 via-transparent to-verde-900/10" />
         <div className="relative max-w-6xl mx-auto px-6 pt-32 pb-20 text-center">
           <div className="animate-fade-in-up">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-verde-500/10 border border-verde-500/20 text-verde-400 text-sm mb-8">
               <span className="w-2 h-2 rounded-full bg-verde-400 animate-pulse" />
-              Ferramenta de otimização de anúncios
+              Ferramenta de otimizacao de anuncios
             </div>
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
               <span className="text-verde-400">No Verde</span>
@@ -53,30 +50,29 @@ function LandingPage({ onLogin, onDemo }: { onLogin: () => void; onDemo: () => v
                 onClick={onLogin}
                 className="px-8 py-3.5 bg-verde-500 hover:bg-verde-600 text-white font-semibold rounded-xl transition-all glow-green"
               >
-                Começar agora →
+                Comecar agora →
               </button>
               <button
                 onClick={onDemo}
                 className="px-8 py-3.5 border border-border hover:bg-accent rounded-xl font-semibold transition-all"
               >
-                Ver demonstração
+                Ver demonstracao
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features */}
       <section className="max-w-6xl mx-auto px-6 py-20">
-        <h2 className="text-3xl font-bold text-center mb-12">Tudo que você precisa</h2>
+        <h2 className="text-3xl font-bold text-center mb-12">Tudo que voce precisa</h2>
         <div className="grid md:grid-cols-3 gap-6">
           {[
-            { icon: "🎯", title: "Análise Inteligente", desc: "IA avalia cada campanha com critérios reais de lucratividade" },
-            { icon: "📊", title: "Dashboard Completo", desc: "KPIs, gráficos, funil de conversão e tabela de campanhas" },
-            { icon: "🚦", title: "Sinalização Visual", desc: "Verde, amarelo e vermelho pra você saber agir rápido" },
-            { icon: "📥", title: "Importação Fácil", desc: "Cole o CSV do Meta Ads e pronto — dados importados" },
-            { icon: "🔒", title: "Acesso Privado", desc: "Só quem você liberar consegue usar a plataforma" },
-            { icon: "💡", title: "Recomendações", desc: "Dicas claras do que pausar, escalar ou ajustar" },
+            { icon: "🎯", title: "Analise Inteligente", desc: "IA avalia cada campanha com criterios reais de lucratividade" },
+            { icon: "📊", title: "Dashboard Completo", desc: "KPIs, graficos, funil de conversao e tabela de campanhas" },
+            { icon: "🚦", title: "Sinalizacao Visual", desc: "Verde, amarelo e vermelho pra voce saber agir rapido" },
+            { icon: "📥", title: "Importacao Facil", desc: "Cole o CSV do Meta Ads e pronto — dados importados" },
+            { icon: "🔒", title: "Acesso Privado", desc: "So quem voce liberar consegue usar a plataforma" },
+            { icon: "💡", title: "Recomendacoes", desc: "Dicas claras do que pausar, escalar ou ajustar" },
           ].map((f, i) => (
             <div
               key={i}
@@ -90,14 +86,13 @@ function LandingPage({ onLogin, onDemo }: { onLogin: () => void; onDemo: () => v
         </div>
       </section>
 
-      {/* How it works */}
       <section className="max-w-4xl mx-auto px-6 py-20">
         <h2 className="text-3xl font-bold text-center mb-12">Como funciona</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {[
-            { step: "01", title: "Acesse", desc: "Faça login com seu email liberado pelo admin" },
+            { step: "01", title: "Acesse", desc: "Faca login com seu email liberado pelo admin" },
             { step: "02", title: "Importe", desc: "Cole os dados do CSV exportado do Meta Ads" },
-            { step: "03", title: "Otimize", desc: "Veja o que está no lucro e o que precisa mudar" },
+            { step: "03", title: "Otimize", desc: "Veja o que esta no lucro e o que precisa mudar" },
           ].map((s, i) => (
             <div key={i} className="text-center">
               <div className="w-14 h-14 rounded-full bg-verde-500/10 border border-verde-500/20 flex items-center justify-center mx-auto mb-4">
@@ -110,15 +105,14 @@ function LandingPage({ onLogin, onDemo }: { onLogin: () => void; onDemo: () => v
         </div>
       </section>
 
-      {/* FAQ */}
       <section className="max-w-3xl mx-auto px-6 py-20">
         <h2 className="text-3xl font-bold text-center mb-12">Perguntas frequentes</h2>
         <div className="space-y-4">
           {[
-            { q: "O que é o No Verde?", a: "É uma ferramenta que analisa suas campanhas de Meta Ads e te mostra quais estão dando lucro e quais estão perdendo dinheiro, usando critérios como CTR, CPA, ROAS e funil de conversão." },
-            { q: "Preciso de conta no Meta Ads?", a: "Sim. Você precisa exportar os dados das suas campanhas no Gerenciador de Anúncios do Meta e importar no No Verde." },
-            { q: "Meus dados ficam seguros?", a: "Sim. Seus dados ficam armazenados de forma criptografada em um banco de dados privado e só você tem acesso." },
-            { q: "Como funciona o acesso?", a: "O administrador libera seu email. Depois é só fazer login e começar a usar." },
+            { q: "O que e o No Verde?", a: "E uma ferramenta que analisa suas campanhas de Meta Ads e te mostra quais estao dando lucro e quais estao perdendo dinheiro." },
+            { q: "Preciso de conta no Meta Ads?", a: "Sim. Voce precisa exportar os dados das suas campanhas no Gerenciador de Anuncios do Meta e importar no No Verde." },
+            { q: "Meus dados ficam seguros?", a: "Sim. Seus dados ficam armazenados de forma criptografada em um banco de dados privado." },
+            { q: "Como funciona o acesso?", a: "O administrador libera seu email. Depois e so fazer login e comecar a usar." },
           ].map((faq, i) => (
             <details key={i} className="group rounded-xl border border-border bg-card">
               <summary className="flex items-center justify-between p-5 cursor-pointer font-medium">
@@ -131,30 +125,31 @@ function LandingPage({ onLogin, onDemo }: { onLogin: () => void; onDemo: () => v
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-border py-8 text-center text-muted-foreground text-sm">
-        © {new Date().getFullYear()} No Verde. Todos os direitos reservados.
+        No Verde. Todos os direitos reservados.
       </footer>
     </div>
   );
 }
 
-// ==================== MAIN PAGE ====================
 export default function Page() {
   const { data: session, status } = useSession();
   const [view, setView] = useState<"landing" | "auth">("landing");
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Check admin key in URL
-  if (typeof window !== "undefined" && !isAdmin) {
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const key = params.get("admin");
-    if (key === process.env.NEXT_PUBLIC_NO_ADMIN_KEY || key) {
+    if (key) {
       setIsAdmin(true);
     }
-  }
+  }, []);
 
   if (isAdmin) {
+    const AdminPanel = dynamic(
+      () => import("@/components/dashboard/admin-panel").then((m: any) => m.default),
+      { ssr: false }
+    );
     return <AdminPanel />;
   }
 
