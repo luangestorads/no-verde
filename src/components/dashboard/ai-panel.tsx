@@ -141,4 +141,4 @@ export default function AIPanel({ campaigns, avgTicket = 100 }: AIPanelProps) {
       </CardContent>
     </Card>
   );
-}
+}   

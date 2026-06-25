@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const { key } = await req.json();
@@ -7,5 +7,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true });
   }
 
-  return NextResponse.json({ error: "Chave inválida" }, { status: 401 });
+  return NextResponse.json({ error: "Chave invalida" }, { status: 401 });
 }
