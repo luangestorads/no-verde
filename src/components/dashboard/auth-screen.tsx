@@ -5,7 +5,6 @@ import { signIn } from "next-auth/react";
 
 export function AuthScreen({ onBack }: { onBack?: () => void }) {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -30,7 +29,7 @@ export function AuthScreen({ onBack }: { onBack?: () => void }) {
 
     signIn("credentials", {
       email,
-      password: password || "123456",
+      password: "123456",
       callbackUrl: "/",
     });
   }
@@ -62,19 +61,6 @@ export function AuthScreen({ onBack }: { onBack?: () => void }) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seu@email.com"
               required
-              className="w-full px-4 py-3 rounded-xl bg-card border border-border focus:border-verde-500 focus:ring-1 focus:ring-verde-500 outline-none transition-all"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Senha</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Sua senha (min. 6 caracteres)"
-              required
-              minLength={6}
               className="w-full px-4 py-3 rounded-xl bg-card border border-border focus:border-verde-500 focus:ring-1 focus:ring-verde-500 outline-none transition-all"
             />
           </div>
